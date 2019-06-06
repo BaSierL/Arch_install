@@ -11,7 +11,7 @@ echo -e "$ECHOA\n$ECHOB\n$ECHOC\n$ECHOD\n$ECHOE" | lolcat 2> ${null} || echo -e 
 tmps=/tmp/arch_tmp
 #systemctl start dhcpcd &> ${null}
 PWDS=`pwd`
-KENDEYA="arch_install_en.sh"
+KENDEYA="arch_install.sh"
 LIST_IN=`echo "${PWDS}/${KENDEYA}"`
 PASS="orange"
 #========网络变量
