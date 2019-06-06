@@ -14,7 +14,7 @@ PWDS=`pwd`
 KENDEYA="arch_install_en.sh"
 LIST_IN=`echo "${PWDS}/${KENDEYA}"`
 PASS="orange"
-#========网络
+#========网络变量
 ETHERNET=`ip link | grep 'enp[0-9]s[0-9]' | grep -v 'grep' | awk '{print $2}' | cut -d":" -f1`  #有线
 WIFI=`ip link | grep 'wlp[0-9]s[0-9]' | grep -v 'grep' | awk '{print $2}' | cut -d":" -f1`   #无线
 #WIFI_IP=`ifconfig ${WIFI} &> $null || echo "--.--.--.--" && ifconfig ${WIFI} | grep ./a"inet " |  awk '{print $2}'`
