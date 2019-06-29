@@ -108,13 +108,38 @@ zh_CN.UTF-8 UTF-8
 [auroot@Arch ~]# umount -R /mnt && reboot now   #卸载 根分区、efi分区
 ```
 
-### 能正常开机，就可以看以下部分
+## 能正常开机，就可以看以下部分
 
-**没有网络? --> [Text](https://github.com/BaSierL/arch_install/blob/master/README.md#%E6%A3%80%E6%9F%A5%E7%BD%91%E7%BB%9C)** 
+**没有网络? --> [可以往上翻](https://github.com/BaSierL/arch_install/blob/master/README.md#%E6%A3%80%E6%9F%A5%E7%BD%91%E7%BB%9C)** 
 
+**安装软件**
+```
+# 以下常用软件
+pacman -S vim git wget zsh ntfs-3g mtpaint mtpfs libmtp NetworkManager dosfstools man-pages-zh_cn create_ap p7zip file-roller unrar neofetch openssh net-tools
 
+# 以下配置
+systemctl enable NetworkManager
+systemctl start NetworkManager
 
+systemctl enable sshd.service
+systemctl start sshd.service
 
+sudo mandb      # 中文的man手册，更新关键词搜索需要的缓存
+
+# 以下识别Windows 引导
+pacman -S os-prober
+grub-mkconfig -o /boot/grub/grub.cfg
+```
+**创建用户**
+```
+useradd -m -g 用户组(可与用户同名) -G wheel -s /bin/bash 用户名
+passwd 用户名        #给用户设置密码
+
+```
+**安装字体**
+```
+sudo pacman -S wqy-microhei wqy-zenhei ttf-dejavu
+```
 
 
 
