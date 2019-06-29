@@ -205,6 +205,36 @@ sudo pacman -S xorg-server xorg-xinit xorg-utils xorg-server-utils mesa
 ```
 
 # Deepin 桌面安装
-
 ![Image text](https://img.iplaysoft.com/wp-content/uploads/2016/deepin/deepin_linux.jpg)
+```
+sudo pacman -S deepin deepin-extra lightdm
+
+vim /etc/lightdm/lightdm.conf
+
+  greeter-session=example-gtk-gnome       # 用VIM 找到这个
+  
+  greeter-session=lightdm-deepin-greeter  # 替换为这个
+
+sudo systemctl enable lightdm             # 加入开机自启
+
+vim /etc/X11/xinit/xinitrc  # 配置这个文件
+
+  exec startdde     # 添加这个
+  
+cp /etc/X11/xinit/xinitrc /home/用户名/.xinitrc
+
+systemctl start lightdm     # 开启桌面 
+```
+
+# Kde5 桌面
+
+
+
+
+
+
+
+
+
+
 
