@@ -1,6 +1,6 @@
 # arch_install
 ArchLinux script Installer (安装脚本)
-https://img.iplaysoft.com/wp-content/uploads/2016/deepin/deepin_linux.jpghttps://raw.githubusercontent.com/BaSierL/arch_install/master/screenshot1.png)
+![Image text](https://img.iplaysoft.com/wp-content/uploads/2016/deepin/deepin_linux.jpghttps://raw.githubusercontent.com/BaSierL/arch_install/master/screenshot1.png)
 
 
 # Auangz安装Arch Linux + Desktop 攻略
