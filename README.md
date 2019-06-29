@@ -265,24 +265,24 @@ sudo pacman -Syu yaourt
 
 # 常用软件
 ```
-  sudo pacman -S google-chrome        # 谷歌浏览器
-  sudo pacman -S firefox              # 火狐浏览器
-  sudo pacman -S bash-complete        # 增强自动补全功能
-	sudo pacman -S xpdf                 # 安装pdf阅读器
-	sudo pacman -Sy yaourt              # 另外一个包管理工具
-	sudo pacman -S lilyterm             # 安装台湾的这个终端（透明背景什么的）
-	sudo pacman -S fortune-mod          # 让vim更有意思的包（随机显示）（/usr/share/fortune/off）
-	sudo pacman -S cowsay               # 牛的二进制图形（/usr/share/cows）
-	sudo yaourt -S vundle-git           # 安装vim的插件管理器
-	sudo pacman -S deepin.com.qq.office	# TIM
-	sudo pacman -S netease-cloud-music	# 网易云音乐
-	sudo pacman -S deepin-movie			    # 深度影院
-	sudo yaourt -S deepin-wechat			  # 微信
-  sudo pacman -S netease-cloud-music  # 网易云音乐
-	sudo pacman -S iease-music				  # 第三方网易云音乐
-  sudo pacman -S virtualbox				    # virtualbox 虚拟机
-  sudo pacman -S vmware-workstation		# vmware 虚拟机
-  sudo pacman -S wps-office           # wps
+sudo pacman -S google-chrome        # 谷歌浏览器
+sudo pacman -S firefox              # 火狐浏览器
+sudo pacman -S bash-complete        # 增强自动补全功能
+sudo pacman -S xpdf                 # 安装pdf阅读器
+sudo pacman -Sy yaourt              # 另外一个包管理工具
+sudo pacman -S lilyterm             # 安装台湾的这个终端（透明背景什么的）
+sudo pacman -S fortune-mod          # 让vim更有意思的包（随机显示）（/usr/share/fortune/off）
+sudo pacman -S cowsay               # 牛的二进制图形（/usr/share/cows）
+sudo yaourt -S vundle-git           # 安装vim的插件管理器
+sudo pacman -S deepin.com.qq.office	# TIM
+sudo pacman -S netease-cloud-music	# 网易云音乐
+sudo pacman -S deepin-movie			    # 深度影院
+sudo yaourt -S deepin-wechat			  # 微信
+sudo pacman -S netease-cloud-music  # 网易云音乐
+sudo pacman -S iease-music				  # 第三方网易云音乐
+sudo pacman -S virtualbox				    # virtualbox 虚拟机
+sudo pacman -S vmware-workstation		# vmware 虚拟机
+sudo pacman -S wps-office           # wps
 https://github.com/xtuJSer/CoCoMusic/releases   # QQ音乐  CoCoMusic
 ```
 # 待续....
