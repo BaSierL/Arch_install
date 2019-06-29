@@ -6,12 +6,12 @@ ArchLinux script Installer (安装脚本)
 
 # Auangz安装Arch Linux + Desktop 攻略
 
-**验证启动模式**
+##验证启动模式
 ```
   ls /sys/firmware/efi/efivars
 ```
 
-**检查网络**
+##检查网络
 ```
   ip link     #查看网卡设备
   ip link set [网卡] up   #开启网卡设备
@@ -19,7 +19,7 @@ ArchLinux script Installer (安装脚本)
   wifi-menu    #连接wifi
 ```
 
-**配置 Mirrort**
+##配置 Mirrort
 ```
   vim /etc/pacman.d/mirrort
 ## China      # 中科大
@@ -30,13 +30,13 @@ Server = https://mirrors.163.com/archlinux/$repo/os/$arch
 Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch
 ```
 
-**磁盘分区**
+##磁盘分区
 
-### 分区命令
+**分区命令**
 ```
   cfdisk /dev/sd[a-z][0-9] 
 ```
-### 格式化命令
+**格式化命令**
 ```
   mkfs.vfat  /dev/sd[a-z][0-9]    # efi/esp  fat32  
   mkfs.ext4 /dev/sd[a-z][0-9]
@@ -44,12 +44,12 @@ Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch
   
 ```
 
-**验证启动模式**
+##验证启动模式
 ```
   ls /sys/firmware/efi/efivars
 ```
 
-**验证启动模式**
+##验证启动模式
 ```
   ls /sys/firmware/efi/efivars
 ```
