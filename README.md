@@ -275,13 +275,13 @@ sudo pacman -S fortune-mod          # 让vim更有意思的包（随机显示）
 sudo pacman -S cowsay               # 牛的二进制图形（/usr/share/cows）
 sudo yaourt -S vundle-git           # 安装vim的插件管理器
 sudo pacman -S deepin.com.qq.office	# TIM
-sudo pacman -S netease-cloud-music	# 网易云音乐
-sudo pacman -S deepin-movie			    # 深度影院
-sudo yaourt -S deepin-wechat			  # 微信
 sudo pacman -S netease-cloud-music  # 网易云音乐
-sudo pacman -S iease-music				  # 第三方网易云音乐
-sudo pacman -S virtualbox				    # virtualbox 虚拟机
-sudo pacman -S vmware-workstation		# vmware 虚拟机
+sudo pacman -S deepin-movie         # 深度影院
+sudo yaourt -S deepin-wechat        # 微信
+sudo pacman -S netease-cloud-music  # 网易云音乐
+sudo pacman -S iease-music          # 第三方网易云音乐
+sudo pacman -S virtualbo            # virtualbox 虚拟机
+sudo pacman -S vmware-workstation   # vmware 虚拟机
 sudo pacman -S wps-office           # wps
 https://github.com/xtuJSer/CoCoMusic/releases   # QQ音乐  CoCoMusic
 ```
