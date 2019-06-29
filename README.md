@@ -107,4 +107,14 @@ zh_CN.UTF-8 UTF-8
 [auroot@Arch ~]# swapoff /dev/sd[a-z][0-9]      #卸载swap
 [auroot@Arch ~]# umount -R /mnt && reboot now   #卸载 根分区、efi分区
 ```
-[text](https://github.com/BaSierL/arch_install/blob/master/README.md#%E6%A3%80%E6%9F%A5%E7%BD%91%E7%BB%9C)
+
+### 能正常开机，就可以看以下部分
+### 没有网络? -> [text](https://github.com/BaSierL/arch_install/blob/master/README.md#%E6%A3%80%E6%9F%A5%E7%BD%91%E7%BB%9C)
+
+
+
+
+
+
+
+
