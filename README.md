@@ -91,6 +91,7 @@ zh_CN.UTF-8 UTF-8
 [auroot@Arch ~]# echo "Archlinux" > /etc/hostname
 ```
 **配置GRUB**
+
 执行passwd 给root设置一个密码。
 安装grub工具，到这一步，一定要看清楚。
 ```
