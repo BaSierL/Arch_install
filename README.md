@@ -30,7 +30,7 @@ Server = https://mirrors.163.com/archlinux/$repo/os/$arch
 Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch
 ```
 
-## 磁盘分区
+### 磁盘分区
 
 **分区命令**
 ```
@@ -44,12 +44,12 @@ Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch
   
 ```
 
-##验证启动模式
+## 验证启动模式
 ```
   ls /sys/firmware/efi/efivars
 ```
 
-##验证启动模式
+## 验证启动模式
 ```
   ls /sys/firmware/efi/efivars
 ```
