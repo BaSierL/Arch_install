@@ -227,9 +227,7 @@ systemctl start lightdm     # 开启桌面
 ```
 
 # Kde5 桌面
-
-
-
+![Image text](https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1561834821555&di=add73721aa159756b3c83b164fc511a2&imgtype=0&src=http%3A%2F%2Fyesky2.img.xzstatic.com%2Fnews%2F201906%2F51007918ba389136331402170193b2e7.jpg)
 
 
 
