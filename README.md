@@ -7,3 +7,6 @@ ArchLinux script Installer (安装脚本)
 # Auangz安装Arch Linux + Desktop 攻略
 
 **验证启动模式**
+```
+  ls /sys/firmware/efi/efivars
+```
