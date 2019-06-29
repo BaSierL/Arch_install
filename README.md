@@ -229,10 +229,61 @@ systemctl start lightdm     # 开启桌面
 # Kde5 桌面
 ![Image text](https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1561834821555&di=add73721aa159756b3c83b164fc511a2&imgtype=0&src=http%3A%2F%2Fyesky2.img.xzstatic.com%2Fnews%2F201906%2F51007918ba389136331402170193b2e7.jpg)
 
+**安装桌面**
+```
+sudo pacman -S sddm sddm-kcm plasma     # 安装软件包
+sudo systemctl enable sddm          # 加入开机自启  
 
+sudo pacman -S plasma-desktop plasma-meta   # 完整桌面，软件自己安装
+sudo pacman -S kde-applications-meta        # 全部加游戏，什么都有，臃肿
 
+vim /etc/X11/xinit/xinitrc  # 配置这个文件
 
+   exec startkde     # 添加这个
+  
+cp /etc/X11/xinit/xinitrc /home/用户名/.xinitrc
+```
 
+# yaourt安装
+### 编辑
+sudo vim /etc/pacman.conf
 
+### 添加   中科大
+```
+[archlinuxcn]
+#The Chinese Arch Linux communities packages.
+SigLevel = Optional TrustAll
+Server = https://mirrors.ustc.edu.cn/archlinuxcn/$arch
+```
+### 添加   清华
+```
+[archlinuxcn]
+SigLevel = Optional TrustAll
+Server = https://mirrors.tuna.tsinghua.edu.cn/archlinuxcn/$arch
+sudo pacman -Syu yaourt
+```
 
+# 常用软件
+```
+  sudo pacman -S google-chrome        # 谷歌浏览器
+  sudo pacman -S firefox              # 火狐浏览器
+  sudo pacman -S bash-complete        # 增强自动补全功能
+	sudo pacman -S xpdf                 # 安装pdf阅读器
+	sudo pacman -Sy yaourt              # 另外一个包管理工具
+	sudo pacman -S lilyterm             # 安装台湾的这个终端（透明背景什么的）
+	sudo pacman -S fortune-mod          # 让vim更有意思的包（随机显示）（/usr/share/fortune/off）
+	sudo pacman -S cowsay               # 牛的二进制图形（/usr/share/cows）
+	sudo yaourt -S vundle-git           # 安装vim的插件管理器
+	sudo pacman -S deepin.com.qq.office	# TIM
+	sudo pacman -S netease-cloud-music	# 网易云音乐
+	sudo pacman -S deepin-movie			    # 深度影院
+	sudo yaourt -S deepin-wechat			  # 微信
+  sudo pacman -S netease-cloud-music  # 网易云音乐
+	sudo pacman -S iease-music				  # 第三方网易云音乐
+  sudo pacman -S virtualbox				    # virtualbox 虚拟机
+  sudo pacman -S vmware-workstation		# vmware 虚拟机
+  sudo pacman -S wps-office           # wps
+https://github.com/xtuJSer/CoCoMusic/releases   # QQ音乐  CoCoMusic
+```
+# 待续....
 
