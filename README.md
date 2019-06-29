@@ -1,7 +1,6 @@
 # arch_install
 ArchLinux script Installer (安装脚本)
-
-![Image text](https://raw.githubusercontent.com/BaSierL/arch_install/master/screenshot1.png)
+https://img.iplaysoft.com/wp-content/uploads/2016/deepin/deepin_linux.jpghttps://raw.githubusercontent.com/BaSierL/arch_install/master/screenshot1.png)
 
 
 # Auangz安装Arch Linux + Desktop 攻略
@@ -115,7 +114,7 @@ zh_CN.UTF-8 UTF-8
 **安装软件**
 ```
 # 以下常用软件
-pacman -S vim git wget zsh ntfs-3g mtpaint mtpfs libmtp NetworkManager dosfstools man-pages-zh_cn create_ap p7zip file-roller unrar neofetch openssh net-tools
+pacman -S vim git wget zsh ntfs-3g NetworkManager dosfstools man-pages-zh_cn create_ap p7zip file-roller unrar neofetch openssh net-tools
 
 # 以下配置
 systemctl enable NetworkManager
@@ -130,17 +129,82 @@ sudo mandb      # 中文的man手册，更新关键词搜索需要的缓存
 pacman -S os-prober
 grub-mkconfig -o /boot/grub/grub.cfg
 ```
+
 **创建用户**
 ```
 useradd -m -g 用户组(可与用户同名) -G wheel -s /bin/bash 用户名
-passwd 用户名        #给用户设置密码
 
+passwd 用户名        #给用户设置密码
 ```
+
 **安装字体**
 ```
 sudo pacman -S wqy-microhei wqy-zenhei ttf-dejavu
 ```
 
+## 安装驱动
+**触摸板驱动**
+```
+sudo pacman -S xf86-input-libinput xf86-input-synaptics 
 
+```
 
+**intel 显示驱动**
+```
+sudo pacman -S xf86-video-intel mesa-libgl libva-intel-driver libvdpau-va-gl
+```
+
+**安装输入设备驱动**
+```
+pacman -S xf86-input-keyboard xf86-input-mouse
+```
+
+**Nvidia 显示驱动**
+```
+sudo pacman -S nvidia nvidia-settings  opencl-nvidia lib32-nvidia-utils lib32-opencl-nvidia mesa lib32-mesa-libgl xf86-video-nouveau bumblebee
+
+systemctl enable bumblebee.service
+sudo gpasswd -a 用户名 bumblebee
+```
+```
+# 大黄蜂配置  不稳
+sudo pacman -S bbswitch
+#编辑
+sudo vim /etc/bumblebee/bumblebee.conf
+-----------------------
+指定nvidia
+Driver=nvidia
+电源管理指定bbswitch
+[driver-nvidia] 
+PMMethod=bbswitch
+-----------------------
+
+sudo tee /proc/acpi/bbswitch <<< ON     #开启
+
+sudo tee /proc/acpi/bbswitch <<< OFF    #关闭
+```
+安装测试软件  在图形界面下：
+```
+sudo pacman -S virtualgl
+optirun glxspheres64
+
+#查看NVIDIA显卡是否已经启动
+nvidia-smi
+```
+
+## 手机文件系统支持
+```
+sudo pacman -S mtpaint mtpfs libmtp 
+Gnome ： gvfs-mtp 
+Kde ：kio-extras
+```
+
+## 图像界面依赖安装
+```
+sudo pacman -S xorg-server xorg-xinit xorg-utils xorg-server-utils mesa
+```
+
+# Deepin 桌面安装
+
+![Image text](https://img.iplaysoft.com/wp-content/uploads/2016/deepin/deepin_linux.jpg)
 
