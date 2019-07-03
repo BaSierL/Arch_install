@@ -20,7 +20,7 @@ wifi-menu        #连接wifi
 
 ### 配置 Mirrort
 ``` shell
-[auroot@Arch ~]# vim /etc/pacman.d/mirrort
+[auroot@Arch ~]$ vim /etc/pacman.d/mirrort
 ## China      # 中科大
 Server = https://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch
 ## China      # 网易云
