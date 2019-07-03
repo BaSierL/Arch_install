@@ -12,10 +12,10 @@ ArchLinux script Installer (安装脚本)
 
 ### 检查网络
 ``` Shell
-[auroot@Arch ~]# ip link     #查看网卡设备
-[auroot@Arch ~]# ip link set [网卡] up   #开启网卡设备
-[auroot@Arch ~]# systemctl start dhcpcd      #开启DHCP服务
-[auroot@Arch ~]# wifi-menu    #连接wifi
+ip link          #查看网卡设备
+ip link set [网卡] up        #开启网卡设备
+systemctl start dhcpcd      #开启DHCP服务
+wifi-menu        #连接wifi
 ```
 
 ### 配置 Mirrort
