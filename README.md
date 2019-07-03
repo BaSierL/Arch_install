@@ -11,7 +11,7 @@ ArchLinux script Installer (安装脚本)
 ```
 
 ### 检查网络
-```
+``` Shell
 [auroot@Arch ~]# ip link     #查看网卡设备
 [auroot@Arch ~]# ip link set [网卡] up   #开启网卡设备
 [auroot@Arch ~]# systemctl start dhcpcd      #开启DHCP服务
@@ -19,7 +19,7 @@ ArchLinux script Installer (安装脚本)
 ```
 
 ### 配置 Mirrort
-```
+``` shell
 [auroot@Arch ~]# vim /etc/pacman.d/mirrort
 ## China      # 中科大
 Server = https://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch
