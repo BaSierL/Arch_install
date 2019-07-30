@@ -20,13 +20,15 @@ wifi-menu        #连接wifi
 
 ### 配置 Mirrort
 ``` shell
-vim /etc/pacman.d/mirrort
+vim /etc/pacman.d/mirrorlist
 ## China      # 中科大
 Server = https://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch
 ## China      # 网易云
 Server = https://mirrors.163.com/archlinux/$repo/os/$arch
 ## China      # 清华
 Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch
+更新一下
+sudo pacman -Sy
 ```
 
 ### 磁盘分区
@@ -114,7 +116,7 @@ zh_CN.UTF-8 UTF-8
 **安装软件**
 ```
 # 以下常用软件
-pacman -S vim git wget zsh ntfs-3g NetworkManager dosfstools man-pages-zh_cn create_ap p7zip file-roller unrar neofetch openssh net-tools
+pacman -S vim git wget zsh ntfs-3g networkmanager dosfstools man-pages-zh_cn create_ap p7zip file-roller unrar neofetch openssh net-tools
 
 # 以下配置
 systemctl enable NetworkManager
