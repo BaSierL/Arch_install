@@ -227,19 +227,19 @@ echo;
         #===EFI分区
             lsblk | grep -v "loop0\|sr0\|NAME"
             read -p ':: Note Tips EFI Partition :( Tips:sda1,sda2.. | Enter)Skip ) :' EFIDISK
-            [[ $EFIDISK == sd? && nvme* ]] && mkfs.vfat $DEV$EFIDISK
+            [[ $EFIDISK == sd? && nvme* ]] || mkfs.vfat $DEV$EFIDISK
             EFIDISK_UUID=`ls -l /dev/disk/by-uuid  | grep "$EFIDISK" | cut -d" " -f11`
             mount $DEV$EFIDISK /mnt/boot/EFI &> $null
         #===Home分区
             lsblk | grep -v "loop0\|sr0\|NAME"
             read -p ':: Note Tips Home Partition :( Tips:sda1,sda2.. | Enter)Skip ) :' HDISK
-            [[ $HDISK == sd? && nvme* ]] && mkfs.ext4 $DEV$HDISK
+            [[ $HDISK == sd? && nvme* ]] || mkfs.ext4 $DEV$HDISK
             HDISK_UUID=`ls -l /dev/disk/by-uuid  | grep "$HDISK" | cut -d" " -f11`
             mount $DEV$HDISK /mnt/home &> $null
         #===Swap分区
             lsblk | grep -v "loop0\|sr0\|NAME"
             read -p ':: Note Tips Swap Partition :( Tips:sda1,sda2.. | Enter)Skip ) :' SDISK
-            [[ $SDISK == sd? && nvme* ]] && mkswap $DEV$SDISK && swapon $DEV$SDISK
+            [[ $SDISK == sd? && nvme* ]] || mkswap $DEV$SDISK && swapon $DEV$SDISK
             clear;
             lsblk | grep -v "loop0\|sr0\|NAME"
             bash ${LIST_IN}
