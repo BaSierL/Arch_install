@@ -251,19 +251,15 @@ echo;
             timedatectl set-ntp true
             sleep 2
             echo;
-            read -p ':: Install the base packages. [Y/n]?: ' INST  #安装基本系统 [Y/n]?: 
+            echo ":: ${r}Install the base packages.${h}"   #安装基本系统
             echo;
-            [[ $INST == Y || y ]] || pacstrap -i /mnt base base-devel ntfs-3g grub efibootmgr vim 
-            sleep 2
+            pacstrap -i /mnt base base-devel ntfs-3g grub efibootmgr vim  
+	    sleep 2
             echo ":: Configure Fstab File." #配置Fstab文件
-            rm -rf /mnt/etc/fstab
-            echo '# Static information about the filesystems.' > /mnt/etc/fstab
-            echo '# See fstab(5) for details.' >> /mnt/etc/fstab
-            echo ' ' >> /mnt/etc/fstab    
-            genfstab -U /mnt >> /mnt/etc/fstab
+	    genfstab -U /mnt >> /mnt/etc/fstab
             sleep 2
-            clear；
-            echo;
+            clear
+            echo
             cp -rf ${LIST_IN} /mnt/root &> $null
             echo -e "\033[1;43m#====================================================#${h}"
             echo -e "\033[1;43m#::  Next you need to execute:                       #${h}"
