@@ -251,11 +251,11 @@ echo;
             timedatectl set-ntp true
             sleep 2
             echo;
-            echo ":: ${r}Install the base packages.${h}"   #安装基本系统
+            echo -e ":: ${r}Install the base packages.${h}"   #安装基本系统
             echo;
             pacstrap -i /mnt base base-devel ntfs-3g grub efibootmgr vim  
 	    sleep 2
-            echo ":: Configure Fstab File." #配置Fstab文件
+            echo -e ":: ${r}Configure Fstab File.${h}" #配置Fstab文件
 	    genfstab -U /mnt >> /mnt/etc/fstab
             sleep 2
             clear
