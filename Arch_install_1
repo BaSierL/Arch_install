@@ -221,10 +221,8 @@ echo;
             echo "Archlinux" > /etc/hostname
             # 配置GRUB
             pacman -S grub efibootmgr os-prober
-            grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Archlinux
+            grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Archlinux && grub-mkconfig -o /boot/grub/grub.cfg
             sleep 3
-            grub-mkconfig -o /boot/grub/grub.cfg
-            sleep 4
 			# 安装字体
             pacman -S ttf-dejavu \
                       wqy-zenhei \
