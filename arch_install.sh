@@ -218,7 +218,7 @@ echo;
             clear;
             lsblk | grep -v "loop0\|sr0\|NAME"
             read -p ':: Note Tips Root( / )Partition( Tips:sda1,sda2.. | Enter)Skip ) :' GDISK
-            [[ $GDISK == sd? && nvme* ]] && mkfs.ext4 $DEV$GDISK
+            [[ $GDISK == sd? && nvme* ]] || mkfs.ext4 $DEV$GDISK
             GDISK_UUID=`ls -l /dev/disk/by-uuid  | grep "$GDISK" | cut -d" " -f11`
 
             mount $DEV$GDISK /mnt 
@@ -229,7 +229,7 @@ echo;
             read -p ':: Note Tips EFI Partition :( Tips:sda1,sda2.. | Enter)Skip ) :' EFIDISK
             [[ $EFIDISK == sd? && nvme* ]] || mkfs.vfat $DEV$EFIDISK
             EFIDISK_UUID=`ls -l /dev/disk/by-uuid  | grep "$EFIDISK" | cut -d" " -f11`
-            mount $DEV$EFIDISK /mnt/boot/EFI &> $null
+            mount $DEV$EFIDISK /mnt/boot/efi &> $null
         #===Home分区
             lsblk | grep -v "loop0\|sr0\|NAME"
             read -p ':: Note Tips Home Partition :( Tips:sda1,sda2.. | Enter)Skip ) :' HDISK
