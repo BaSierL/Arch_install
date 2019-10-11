@@ -252,7 +252,7 @@ fi
             echo "-----------------------------------"
             echo;
             echo -e "\033[1;33m:: ==>> What are the tasks[1,2,3..] Exit [Q]? ${h}"
-                read -p ':: ==>> : ' adddrive
+                read -p ":: ==>> : " adddrive
                     case $adddrive in
                         1)
                             sudo pacman -S xf86-input-libinput \
