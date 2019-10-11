@@ -57,7 +57,7 @@ sudo pacman -Sy
 
 ### 安装系统
 ```
-[auroot@Arch ~]# pacstrap -i /mnt base base-devel
+[auroot@Arch ~]# pacstrap -i /mnt base base-devel linux
 ```
 ```
 [auroot@Arch ~]# genfstab -U /mnt >> /mnt/etc/fstab     # 创建fstab分区表，记得检查
