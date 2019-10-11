@@ -253,7 +253,7 @@ echo;
             echo;
             echo -e ":: ${r}Install the base packages.${h}"   #安装基本系统
             echo;
-            pacstrap -i /mnt base base-devel ntfs-3g grub efibootmgr vim  
+            pacstrap -i /mnt base base-devel ntfs-3g grub efibootmgr vim  git
 	    sleep 2
             echo -e ":: ${r}Configure Fstab File.${h}" #配置Fstab文件
 	    genfstab -U /mnt >> /mnt/etc/fstab
