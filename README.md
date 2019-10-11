@@ -134,7 +134,7 @@ grub-mkconfig -o /boot/grub/grub.cfg
 
 **创建用户**
 ```
-useradd -m -g 用户组(可与用户同名) -G wheel -s /bin/bash 用户名
+useradd -m -g users -G wheel -s /bin/bash 用户名
 
 passwd 用户名        #给用户设置密码
 ```
