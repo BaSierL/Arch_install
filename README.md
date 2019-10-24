@@ -209,7 +209,7 @@ $ nvidia-xconfig
 ```
 
 **启动脚本配置**
-### LightDM
+## LightDM
 ```
 $ nano /etc/lightdm/display_setup.sh
 ----------------------------------------------------------------------
