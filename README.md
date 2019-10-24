@@ -57,7 +57,7 @@ sudo pacman -Sy
 
 ### 安装系统
 ```
-[auroot@Arch ~]# pacstrap -i /mnt base base-devel linux
+[auroot@Arch ~]# pacstrap /mnt base base-devel linux linux-firmware 
 ```
 ```
 [auroot@Arch ~]# genfstab -U /mnt >> /mnt/etc/fstab     # 创建fstab分区表，记得检查
@@ -90,6 +90,8 @@ zh_CN.UTF-8 UTF-8
 **主机名**
 ```
 [auroot@Arch ~]# echo "Archlinux" > /etc/hostname
+[auroot@Arch ~]# passwd
+[auroot@Arch ~]# mkinitcpio -p linux
 ```
 **配置GRUB**
 
@@ -141,19 +143,40 @@ passwd 用户名        #给用户设置密码
 
 **安装字体**
 ```
-sudo pacman -S wqy-microhei wqy-zenhei ttf-dejavu
+pacman -S wqy-microhei wqy-zenhei ttf-dejavu
 ```
 
 ## 安装驱动
 **触摸板驱动**
 ```
-sudo pacman -S xf86-input-libinput xf86-input-synaptics 
+pacman -S xf86-input-libinput xf86-input-synaptics 
 
+```
+
+**触摸板驱动**
+```
+sudo pacman -S bluez bluez-utils blueman  bluedevil
+
+systemctl start bluetooth.service
+systemctl enable bluetooth.service
+```
+安装蓝牙音频：
+```
+sudo pacman -S pulseaudio-bluetooth
+sudo vim /etc/pulse/system.pa
+
+load-module module-bluetooth-policy
+load-module module-bluetooth-discover
+```
+
+**声音**
+```
+pacman -S alsa-utils
 ```
 
 **intel 显示驱动**
 ```
-sudo pacman -S xf86-video-intel mesa-libgl libva-intel-driver libvdpau-va-gl
+pacman -S xf86-video-intel mesa-libgl libva-intel-driver libvdpau-va-gl
 ```
 
 **安装输入设备驱动**
@@ -163,28 +186,113 @@ pacman -S xf86-input-keyboard xf86-input-mouse
 
 **Nvidia 显示驱动**
 ```
-sudo pacman -S nvidia nvidia-settings  opencl-nvidia lib32-nvidia-utils lib32-opencl-nvidia mesa lib32-mesa-libgl xf86-video-nouveau bumblebee
+pacman -S nvidia nvidia-settings  nvidia-utils  
 
-systemctl enable bumblebee.service
-sudo gpasswd -a 用户名 bumblebee
+opencl-nvidia lib32-nvidia-utils lib32-opencl-nvidia mesa lib32-mesa-libgl xf86-video-nouveau bumblebee
 ```
+**查看n卡的BusID**
 ```
-# 大黄蜂配置  不稳
-sudo pacman -S bbswitch
-#编辑
-sudo vim /etc/bumblebee/bumblebee.conf
------------------------
-指定nvidia
-Driver=nvidia
-电源管理指定bbswitch
-[driver-nvidia] 
-PMMethod=bbswitch
------------------------
+$ lspci | egrep 'VGA|3D'
+出现如下格式：
+----------------------------------------------------------------------
+00:02.0 VGA compatible controller: Intel Corporation UHD Graphics 630 (Desktop)
+01:00.0 VGA compatible controller: NVIDIA Corporation GP107M [GeForce GTX 1050 Ti Mobile] (rev a1)
+————————————————
+```
+自动生成配置文件:
+```
+$ nvidia-xconfig
+```
+**启动脚本配置**
+LightDM
+```
+$ nano /etc/lightdm/display_setup.sh
+----------------------------------------------------------------------
+#!/bin/sh
+xrandr --setprovideroutputsource modesetting NVIDIA-0
+xrandr --auto
+----------------------------------------------------------------------
+$ chmod +x /etc/lightdm/display_setup.sh
+$ nano /etc/lightdm/lightdm.conf
+----------------------------------------------------------------------
+[Seat:*]
+display-setup-script=/etc/lightdm/display_setup.sh
+----------------------------------------------------------------------
+```
 
-sudo tee /proc/acpi/bbswitch <<< ON     #开启
-
-sudo tee /proc/acpi/bbswitch <<< OFF    #关闭
+SDDM
 ```
+$ vim /usr/share/sddm/scripts/Xsetup
+----------------------------------------------------------------------
+xrandr --setprovideroutputsource modesetting NVIDIA-0
+xrandr --auto
+```
+GDM
+```
+创建两个桌面文件
+/usr/share/gdm/greeter/autostart/optimus.desktop
+/etc/xdg/autostart/optimus.desktop
+----------------------------------------------------------------------
+[Desktop Entry]
+Type=Application
+Name=Optimus
+Exec=sh -c "xrandr --setprovideroutputsource modesetting NVIDIA-0; xrandr --auto"
+NoDisplay=true
+X-GNOME-Autostart-Phase=DisplayServer
+```
+
+修改配置文件:
+```
+$ vim /etc/X11/xorg.conf
+----------------------------------------------------------------------
+Section "Module"                                                      
+    load "modesetting"
+EndSection
+
+Section "Device"
+    Identifier     "Device0"
+    Driver         "nvidia"
+    VendorName     "NVIDIA Corporation"
+    BusID          "1:0:0"                                            #此处填刚刚查询到的BusID
+    Option         "AllowEmptyInitialConfiguration"
+EndSection
+```
+解决画面撕裂问题:
+```
+$ nano /etc/mkinitcpio.conf
+----------------------------------------------------------------------
+MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)
+----------------------------------------------------------------------
+
+$ nano /etc/default/grub                                              # 此处必须是grub引导，其他引导自行百度
+----------------------------------------------------------------------
+GRUB_CMDLINE_LINUX_DEFAULT="quiet nvidia-drm.modeset=1"               #此处加nvidia-drm.modeset=1参数
+----------------------------------------------------------------------
+
+$ grub-mkconfig -o /boot/grub/grub.cfg                           
+```
+nvidia升级时自动更新initramfs:
+```
+$ mkdir /etc/pacman.d/hooks
+$ nano /etc/pacman.d/hooks/nvidia.hook
+-----------------------------------------------------------------
+[Trigger]
+Operation=Install
+Operation=Upgrade
+Operation=Remove
+Type=Package
+Target=nvidia
+Target=linux
+# Change the linux part above and in the Exec line if a different kernel is used
+
+[Action]
+Description=Update Nvidia module in initcpio
+Depends=mkinitcpio
+When=PostTransaction
+NeedsTargets
+Exec=/bin/sh -c 'while read -r trg; do case $trg in linux) exit 0; esac; done; /usr/bin/mkinitcpio -P'
+```
+
 安装测试软件  在图形界面下：
 ```
 sudo pacman -S virtualgl
@@ -194,9 +302,40 @@ optirun glxspheres64
 nvidia-smi
 ```
 
+在nvidia和nouveau之间切换: "想要成功地完成切换，一次重启是很有必要的 "
+```
+#!/bin/bash
+# nvidia -> nouveau
+
+/usr/bin/sudo /bin/sed -i 's/#options nouveau modeset=1/options nouveau modeset=1/' /etc/modprobe.d/modprobe.conf
+/usr/bin/sudo /bin/sed -i 's/#MODULES="nouveau"/MODULES="nouveau"/' /etc/mkinitcpio.conf
+
+/usr/bin/sudo /usr/bin/pacman -Rdds --noconfirm nvidia-173xx{,-utils}
+/usr/bin/sudo /usr/bin/pacman -S --noconfirm nouveau-dri xf86-video-nouveau
+
+#/usr/bin/sudo /bin/cp {10-monitor,30-nouveau}.conf /etc/X11/xorg.conf.d/
+
+/usr/bin/sudo /sbin/mkinitcpio -p linux
+```
+```
+#!/bin/bash
+# nouveau -> nvidia
+
+/usr/bin/sudo /bin/sed  -i 's/options nouveau modeset=1/#options nouveau modeset=1/' /etc/modprobe.d/modprobe.conf
+/usr/bin/sudo /bin/sed -i 's/MODULES="nouveau"/#MODULES="nouveau"/' /etc/mkinitcpio.conf
+
+/usr/bin/sudo /usr/bin/pacman -Rdds --noconfirm nouveau-dri xf86-video-nouveau libgl
+/usr/bin/sudo /usr/bin/pacman -S --noconfirm nvidia-173xx{,-utils}
+
+#/usr/bin/sudo /bin/rm /etc/X11/xorg.conf.d/{10-monitor,30-nouveau}.conf
+
+/usr/bin/sudo /sbin/mkinitcpio -p linux
+```
+
+
 ## 手机文件系统支持
 ```
-sudo pacman -S mtpaint mtpfs libmtp 
+sudo pacman -S mtpaint mtpfs libmtp  kio-extras
 Gnome ： gvfs-mtp 
 Kde ：kio-extras
 ```
@@ -272,12 +411,9 @@ sudo pacman -S firefox              # 火狐浏览器
 sudo pacman -S bash-complete        # 增强自动补全功能
 sudo pacman -S xpdf                 # 安装pdf阅读器
 sudo pacman -Sy yaourt              # 另外一个包管理工具
-sudo pacman -S lilyterm             # 安装台湾的这个终端（透明背景什么的）
-sudo pacman -S fortune-mod          # 让vim更有意思的包（随机显示）（/usr/share/fortune/off）
 sudo pacman -S cowsay               # 牛的二进制图形（/usr/share/cows）
 sudo yaourt -S vundle-git           # 安装vim的插件管理器
 sudo pacman -S deepin.com.qq.office	# TIM
-sudo pacman -S netease-cloud-music  # 网易云音乐
 sudo pacman -S deepin-movie         # 深度影院
 sudo yaourt -S deepin-wechat        # 微信
 sudo pacman -S netease-cloud-music  # 网易云音乐
@@ -286,6 +422,25 @@ sudo pacman -S virtualbo            # virtualbox 虚拟机
 sudo pacman -S vmware-workstation   # vmware 虚拟机
 sudo pacman -S wps-office           # wps
 https://github.com/xtuJSer/CoCoMusic/releases   # QQ音乐  CoCoMusic
+
+```
+
+**TIM**
+
+1、安装TIM
+```
+sudo pacman -S deepin.com.qq.office 
+```
+2、第二个包很重要
+```
+sudo pacman -S gnome-settings-daemon
+```
+3、打开TIM，自启gsd-xsettings （推荐），只对TIM有效。
+```
+sudo vim /usr/share/applications/deepin.com.qq.office.desktop
+
+注释： Exec=“/opt/deepinwine/apps/Deepin-TIM/run.sh” -u %u
+加入：Exec=/usr/lib/gsd-xsettings || /opt/deepinwine/apps/Deepin-TIM/run.sh
 ```
 # 待续....
 
