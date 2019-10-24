@@ -209,7 +209,7 @@ $ nvidia-xconfig
 ```
 
 **启动脚本配置**
-## LightDM
+**LightDM**
 ```
 $ nano /etc/lightdm/display_setup.sh
 ----------------------------------------------------------------------
@@ -225,7 +225,7 @@ display-setup-script=/etc/lightdm/display_setup.sh
 ----------------------------------------------------------------------
 ```
 
-### SDDM
+**SDDM**
 ```
 $ vim /usr/share/sddm/scripts/Xsetup
 ----------------------------------------------------------------------
@@ -233,7 +233,7 @@ xrandr --setprovideroutputsource modesetting NVIDIA-0
 xrandr --auto
 ```
 
-### GDM
+**GDM**
 ```
 创建两个桌面文件
 /usr/share/gdm/greeter/autostart/optimus.desktop
@@ -247,7 +247,7 @@ NoDisplay=true
 X-GNOME-Autostart-Phase=DisplayServer
 ```
 
-### 修改配置文件:
+**修改配置文件**
 ```
 $ vim /etc/X11/xorg.conf
 ----------------------------------------------------------------------
@@ -263,7 +263,7 @@ Section "Device"
     Option         "AllowEmptyInitialConfiguration"
 EndSection
 ```
-### 解决画面撕裂问题:
+**解决画面撕裂问题**
 ```
 $ nano /etc/mkinitcpio.conf
 ----------------------------------------------------------------------
@@ -277,7 +277,7 @@ GRUB_CMDLINE_LINUX_DEFAULT="quiet nvidia-drm.modeset=1"               #此处加
 
 $ grub-mkconfig -o /boot/grub/grub.cfg                           
 ```
-### nvidia升级时自动更新initramfs:
+**nvidia升级时自动更新initramfs**
 ```
 $ mkdir /etc/pacman.d/hooks
 $ nano /etc/pacman.d/hooks/nvidia.hook
@@ -299,7 +299,7 @@ NeedsTargets
 Exec=/bin/sh -c 'while read -r trg; do case $trg in linux) exit 0; esac; done; /usr/bin/mkinitcpio -P'
 ```
 
-### 安装测试软件  在图形界面下：
+**安装测试软件  在图形界面下**
 ```
 sudo pacman -S virtualgl
 optirun glxspheres64
@@ -308,7 +308,7 @@ optirun glxspheres64
 nvidia-smi
 ```
 
-### 在nvidia和nouveau之间切换: "想要成功地完成切换，一次重启是很有必要的 "
+**在nvidia和nouveau之间切换: "想要成功地完成切换，一次重启是很有必要的 "**
 ```
 #!/bin/bash
 # nvidia -> nouveau
@@ -432,17 +432,17 @@ https://github.com/xtuJSer/CoCoMusic/releases   # QQ音乐  CoCoMusic
 
 ```
 
-**TIM**
+### TIM
 
-### 1、安装TIM
+**1、安装TIM**
 ```
 sudo pacman -S deepin.com.qq.office 
 ```
-### 2、第二个包很重要
+**2、第二个包很重要**
 ```
 sudo pacman -S gnome-settings-daemon
 ```
-### 3、打开TIM，自启gsd-xsettings （推荐），只对TIM有效。
+**3、打开TIM，自启gsd-xsettings （推荐），只对TIM有效。**
 ```
 sudo vim /usr/share/applications/deepin.com.qq.office.desktop
 
