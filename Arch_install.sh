@@ -38,13 +38,13 @@ JHG=$(echo -e "${g}-=>${h}")
 JHY=$(echo -e "${y}-=>${h}")
 #-----------------------------
 # 提示 蓝
-PSB=$(echo -e "${b}:==>${h}")
+PSB=$(echo -e "${b} ::==>${h}")
 # 提示 红
-PSR=$(echo -e "${r}:==>${h}")
+PSR=$(echo -e "${r} ::==>${h}")
 # 提示 绿
-PSG=$(echo -e "${g}:==>${h}")
+PSG=$(echo -e "${g} ::==>${h}")
 # 提示 黄
-PSY=$(echo -e "${y}:==>${h}")
+PSY=$(echo -e "${y} ::==>${h}")
 #-----------------------------
 
 #========变量值
@@ -70,7 +70,7 @@ PASS="123456"
 
 #========网络变量
 #有线
-ETHERNET=`ip link | grep 'enp[0-9]s[0-9]' | grep -v 'grep' | awk '{print $2}' | cut -d":" -f1`  
+ETHERNET=`ip link | grep 'enp[0-9]s[0-9]' |  grep -v 'grep' | awk '{print $2}' | cut -d":" -f1`  
 #无线
 WIFI=`ip link | grep 'wlp[0-9]s[0-9]' | grep -v 'grep' | awk '{print $2}' | cut -d":" -f1`   
 
@@ -93,10 +93,10 @@ echo -e "${g}|| SSH:                ssh $USER@${ETHERNET_IP:-IP_Addess.}        
 echo -e "${g}|| SSH:                ssh $USER@${WIFI_IP:-IP_Addess.}                         ${h}"
 echo -e "${g}||====================================================================||${h}"
 echo;
-echo -e "${PSG} ${g}Configure Mirrorlist   [1]${h}"
-echo -e "${PSG} ${g}Configure Network      [2]${h}"
+echo -e "${PSB} ${g}Configure Mirrorlist   [1]${h}"
+echo -e "${PSB} ${g}Configure Network      [2]${h}"
 echo -e "${PSG} ${g}Configure SSH          [3]${h}"
-echo -e "${PSG} ${g}Install System         [4]${h}"
+echo -e "${PSY} ${g}Install System         [4]${h}"
 echo -e "${PSG} ${g}Exit Script            [Q]${h}"
 echo;
 READS_A=$(echo -e "${PSG} ${y}What are the tasks[1,2,3..]${h} ${JHB} ")
@@ -205,11 +205,10 @@ if [[ ${principal_variable} == 4 ]];then
     echo
     echo -e "${r}      Install System Modular${h}"
     echo "---------------------------------------------"
-    echo -e "${wh}:: ==>> Disk partition       ${h}${r}**${h}  ${w}[1]${h}"
-    echo -e "${wh}:: ==>> Install System Files ${h}${r}**${h}  ${w}[2]${h}"
-    echo -e "${wh}:: ==>> Installation GRUB    ${h}${r}**${h}  ${w}[3]${h}"
-    echo -e "${wh}:: ==>> Installation Desktop ${h}${b}*${h}   ${w}[4]${h}"    
-    echo -e "${wh}:: ==>> Installation Drive   ${h}${b}*${h}   ${w}[5]${h}"
+    echo -e "${PSY} ${g}   Disk partition.         ${h}${r}**${h}  ${w}[1]${h}"
+    echo -e "${PSY} ${g}   Install System Files.   ${h}${r}**${h}  ${w}[2]${h}"
+    echo -e "${PSG} ${g}   Installation Desktop.   ${h}${b}*${h}   ${w}[3]${h}"    
+    echo -e "${PSY} ${g}   Configurt System.       ${h}${r}**${h}  ${w}[4]${h}"
     echo "---------------------------------------------"
 echo;
     READS_C=$(echo -e "${PSG} ${y} What are the tasks[1,2,3..] Exit [Q] ${h}${JHB} ")
@@ -314,11 +313,42 @@ echo;
             echo -e "${wg}#::  Later operations are oriented to the new system.  #${h}"
             echo -e "${wg}#======================================================#${h}"
             sleep 3
-            echo
+            echo    # Chroot到新系统中完成基础配置，第一步配置
                 cat $0 > /mnt/Arch_install.sh  && chmod +x /mnt/Arch_install.sh
                 arch-chroot /mnt /bin/bash /Arch_install.sh
-                
-            echo -e "${ws}#====================================================#${h}"
+#----------------------------------------------------------------------------------------------------------------------------------------------------
+                    echo -e "${wg}Installing grub tools.${h}"  #安装grub工具
+                    pacman -S grub efibootmgr os-prober
+                    grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Archlinux   # 安装Grub引导
+                    grub-mkconfig -o /boot/grub/grub.cfg                            # 生成配置文件
+                    echo;
+                    if efibootmgr | grep "Archlinux" &> ${null} ; then      #检验 并提示用户
+                        echo -e "${g} Grub installed successfully -=> [Archlinux] ${h}"
+                        echo -e "${g}     `efibootmgr | grep "Archlinux"`  ${h}" 
+                        echo;   
+                    else
+                        echo -e "${r} Grub installed failed ${h}"       # 如果安装失败，提示用户，并列出引导列表
+                        echo -e "${g}     `efibootmgr`  ${h}"   
+                        echo; 
+                    fi
+                        echo -e "${PSG} ${w}Configure enable Network.${h}"   
+                    systemctl enable NetworkManager &> ${null}        #配置网络 加入开机启动
+                    #---------------------------------------------------------------------------#
+                    # 基础配置  时区 主机名 本地化 语言 安装语言包
+                    #-----------------------------
+                        echo -e "${PSG} ${w}Time zone changed to 'Shanghai'. ${h}"
+                    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && hwclock --systohc # 将时区更改为"上海" / 生成 /etc/adjtime
+                        echo -e "${PSG} ${w}Localization language settings. ${h}"
+                    echo "Archlinux" > /etc/hostname  # 设置主机名
+                    sed  -i "24i en_US.UTF-8 UTF-8" /etc/locale.gen   # 本地化设置 "英文"
+                    sed  -i "24i zh_CN.UTF-8 UTF-8" /etc/locale.gen   # 本地化设置 "中文"
+                    locale-gen       # 生成 locale
+                    echo -e "${PSG} ${w}Configure local language defaults 'en_US.UTF-8'. ${h}"
+                    echo "LANG=en_US.UTF-8" > /etc/locale.conf       # 系统语言 "英文" 默认为英文   
+                    # echo "LANG=zh_CN.UTF-8" > /etc/locale.conf       # 系统语言 "中文"
+                    echo -e "${PSG} ${w}Install Fonts. ${h}"
+                    pacman -S wqy-microhei wqy-zenhei ttf-dejavu ttf-ubuntu-font-family noto-fonts # 安装语言包
+            echo -e "${ws}#====================================================#${h}" #本区块退出后的提示
             echo -e "${ws}#::  Next you need to execute:                       #${h}"
             echo -e "${ws}#::  arch-chroot /mnt /bin/bash                      #${h}"
             echo -e "${ws}#::  Then you can install the driver or software.。  #${h}"
@@ -330,64 +360,60 @@ echo;
 fi
 #==========  Installation GRUB ===========3333333333333
 if [[ ${tasks} == 3 ]];then
-            echo -e "${wg}Installing grub tools.${h}"  #安装grub工具
-            pacman -S grub efibootmgr os-prober
-            grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Archlinux
-            grub-mkconfig -o /boot/grub/grub.cfg
-            echo -e "${g}:: ==>> Configure enable Network.${h}"      #配置网络
-            systemctl enable NetworkManager &> ${null}    #
-                if efibootmgr | grep "Archlinux" &> ${null} ; then
-                    echo -e "${g} Grub installed successfully -=> [Archlinux] ${h}"
-                    echo -e "${g}     `efibootmgr | grep "Archlinux"`  ${h}"
-                else
-                    echo -e "${r} Grub installed failed ${h}"
-                    echo -e "${g}     `efibootmgr`  ${h}"
+    #---------------------------------------------------------------------------#
+    # 配置用户 Root 密码
+    #-----------------------------
+    echo;
+    SETTINGS_ROOT_PA=$(echo -e "${PSY} ${g}Settings ${y}Root Password.${h}${JHG} ")
+    SETTINGS_ROOT_PB=$(echo -e "${PSY} ${g}Please enter the ${y}Root Password${h}${g} again.${h}${JHG} ")
+    SETTINGS_USERNAME=$(echo -e "${PSY} ${g}Settings UserName.${h}${JHG} ")
+    SETTINGS_USER_PASS=$(echo -e "${PSY} ${g}Settings Password.${h}${JHG} ")
+    read -p "${SETTINGS_ROOT_PA}" ROOT_PASSWORD_A
+    read -p "${SETTINGS_ROOT_PB}" ROOT_PASSWORD_B
+    if [${ROOT_PASSWORD_A} == ${ROOT_PASSWORD_B} ]; then
+        echo root:${ROOT_PASSWORD_B} | chpasswd &> $null
+        echo;
+        echo -e "${PSG} Root Password setting complete,[OK]"
+    else    
+        echo -e "${PSR} ${r}Two passwords are inconsistent. ${h}"
+        exit 30;
+    fi
+    #---------------------------------------------------------------------------#
+    # 配置用户
+    #-----------------------------
+    echo;
+    read -p "${SETTINGS_USERNAME}" USER_NAME
+    read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_A
+    read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_B
+    if [${USER_PASSWORD_A} == ${USER_PASSWORD_B} ]; then
+        useradd -m -g users -G wheel -s /bin/bash ${USER_NAME}
+        echo ${USER_NAME}:${USER_PASSWORD_B} | chpasswd &> $null
+        echo;
+        echo -e "${PSG} Password setting complete,[OK]"
+    else    
+        echo -e "${PSR} ${r}${USER_NAME} Two passwords are inconsistent. ${h}"
+        exit 31;
+    fi
+    #---------------------------------------------------------------------------#
+    # 更改sudo 配置
+    #-----------------------------
+    echo -e "${PSG} ${g}Configure Sudoers. ${h}"
+    function S_LINE() {
+        sed -n -e '/# %wheel ALL=(ALL) NOPASSWD: ALL/=' /etc/sudoers
+    }
+    SUDOERS_LIST=$(S_LINE)
+    chmod 770 /etc/sudoers
+        sed -i "${SUDOERS_LIST}i %wheel ALL=\(ALL\) NOPASSWD: ALL" /etc/sudoers || echo -e "${PSY} ${y}Configure Sudoers fail. ${h}"
+    chmod 440 /etc/sudoers
 
-            echo -e "${ws}#====================================================#${h}"
-            echo -e "${ws}#::  Next you need to execute:                       #${h}"
-            echo -e "${ws}#::  arch-chroot /mnt /bin/bash                      #${h}"
-            echo -e "${ws}#::  Then you can install the driver or software.。  #${h}"
-            echo -e "${ws}#====================================================#${h}"
-            sleep 10
-            exit 0
-        fi
-
+#pacman -S mesa-libgl xf86-video-intel libva-intel-driver libvdpau-va-glmesa-demos    #intel
+#pacman -S alsa-utils pulseaudio pulseaudio-alsa  #安装声音软件包
+#pacman -S xorg-server xorg-xinit xorg-utils xorg-server-utils mesa #图像界面安装
+#pacman -S nvidia nvidia-settings xf86-video-nv   #英伟达
+#pacman -S create_ap   #无线AP
+#pacman -S xf86-input-libinput xf86-input-synaptics     #触摸板驱动
 fi
 
- #           echo "准备chroot 进入到新系统"
-#            cp ${LIST_IN} /mnt/root
-#            arch-chroot /mnt /bin/bash
- #           ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-
-
-
-#    
-#   
-#   vim /etc/locale.gen
-#        en_US.UTF-8 UTF-8
-#        zh_CN.UTF-8 UTF-8
-#    locale-gen
-#    echo "LANG=en_US.UTF-8" > /etc/locale.conf  #系统语言（英文）
-#    echo "Archlinux" > /etc/hostname
-#    passwd
-#    pacman -S xf86-input-libinput xf86-input-synaptics     #触摸板驱动
-#    sudo pacman -S create_ap   #无线AP
-#        pacman -S mesa-libgl xf86-video-intel libva-intel-driver libvdpau-va-glmesa-demos    #intel
-#    pacman -S nvidia nvidia-settings xf86-video-nv   #英伟达
-#    pacman -S xorg-server xorg-xinit xorg-utils xorg-server-utils mesa #图像界面安装
-#    echo "LANG=zh_CN.UTF-8" > /etc/locale.conf  #系统语言（中文）
-#    pacman -S alsa-utils pulseaudio pulseaudio-alsa  #安装声音软件包     
-#    sudo pacman -S ttf-dejavu wqy-zenhei wqy-microhei ttf-liberation ttf-dejavu #字体
-
-#    useradd -m -g users -G wheel -s /bin/bash kendeya
-#    passwd kendeya
-#    %wheel ALL=(ALL) NOPSSWD: ALL    sudo  
-
-	
-
- 
-
-#
 ##========退出 EXIT
 case $principal_variable in
     q | Q | quit | QUIT)
@@ -399,6 +425,3 @@ case $principal_variable in
     
     exit 0
 esac
-
-# head -n 10 /etc/profile
-# tail  -n 5 /etc/profile
