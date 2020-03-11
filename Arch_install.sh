@@ -6,12 +6,16 @@
 # URL GitHub： https://github.com/BaSierL/arch_install.git
 # URL Gitee ： https://gitee.com/auroot/arch_install.git
 
-#====脚本颜色变量
+# 给予mirrorlist.sh执行权限，否则将我发导入源。
+chmod +x $PWD/mirrorlist.sh
+
+#====脚本颜色变量-------------
 r='\033[1;31m'	#---红
 g='\033[1;32m'	#---绿
 y='\033[1;33m'	#---黄
 b='\033[1;36m'	#---蓝
 w='\033[1;37m'	#---白
+#-----------------------------
 rw='\033[1;41m'    #--红白
 wg='\033[1;42m'    #--白绿
 ws='\033[1;43m'    #--白褐
@@ -23,6 +27,25 @@ h='\033[0m'		   #---后缀
 bx='\033[1;4;36m'  #---蓝 下划线
 wy='\033[1;41m' 
 h='\033[0m'
+#-----------------------------
+# 交互 蓝
+JHB=$(echo -e "${b}-=>${h}")
+# 交互 红
+JHR=$(echo -e "${r}-=>${h}")
+# 交互 绿
+JHG=$(echo -e "${g}-=>${h}")
+# 交互 黄
+JHY=$(echo -e "${y}-=>${h}")
+#-----------------------------
+# 提示 蓝
+PSB=$(echo -e "${b}:==>${h}")
+# 提示 红
+PSR=$(echo -e "${r}:==>${h}")
+# 提示 绿
+PSG=$(echo -e "${g}:==>${h}")
+# 提示 黄
+PSY=$(echo -e "${y}:==>${h}")
+#-----------------------------
 
 #========变量值
 null="/dev/null"
@@ -61,22 +84,22 @@ WIFI_IP=`ip route | grep ${WIFI} &> ${null} && ip route list | grep ${WIFI} |  c
 
 #========选项
 echo -e "${b}||====================================================================||${h}"
-echo -e "${b}|| Script Name:        Arch Linux system installation script.         ||${h}"  
-echo -e "${b}|| Author:             Basierl                                        ||${h}"
-echo -e "${b}|| GitHub:	       ${bx}https://github.com/BaSierL/arch_install${h}        ${b}||${h}"
-echo -e "${g}|| Ethernet:           ${ETHERNET_IP:-No_network..}                                   ||${h}"
-echo -e "${g}|| WIFI:	       ${WIFI_IP:-No_network.}                                    ||${h}"
-echo -e "${g}   SSH:                ssh $USER@${ETHERNET_IP:-IP_Addess.}                         ${h}"
-echo -e "${g}   SSH:                ssh $USER@${WIFI_IP:-IP_Addess.}                         ${h}"
+echo -e "${b}|| Script Name:        Arch Linux system installation script.        ${h}"  
+echo -e "${b}|| Author:             Basierl                                       ${h}"
+echo -e "${b}|| GitHub:	       ${bx}https://github.com/BaSierL/arch_install${h}        ${h}"
+echo -e "${g}|| Ethernet:           ${ETHERNET_IP:-No_network..}                                  ${h}"
+echo -e "${g}|| WIFI:	       ${WIFI_IP:-No_network.}                                   ${h}"
+echo -e "${g}|| SSH:                ssh $USER@${ETHERNET_IP:-IP_Addess.}                         ${h}"
+echo -e "${g}|| SSH:                ssh $USER@${WIFI_IP:-IP_Addess.}                         ${h}"
 echo -e "${g}||====================================================================||${h}"
 echo;
-echo -e "${g}:: ==>> Configure Mirrorlist   [1]${h}"
-echo -e "${g}:: ==>> Configure Network      [2]${h}"
-echo -e "${g}:: ==>> Configure SSH          [3]${h}"
-echo -e "${g}:: ==>> Install System         [4]${h}"
-echo -e "${g}:: ==>> Exit Script            [Q]${h}"
+echo -e "${PSG} ${g}Configure Mirrorlist   [1]${h}"
+echo -e "${PSG} ${g}Configure Network      [2]${h}"
+echo -e "${PSG} ${g}Configure SSH          [3]${h}"
+echo -e "${PSG} ${g}Install System         [4]${h}"
+echo -e "${PSG} ${g}Exit Script            [Q]${h}"
 echo;
-READS_A=$(echo -e "${y}:: ==>> What are the tasks[1,2,3..] -=> ${h}")
+READS_A=$(echo -e "${PSG} ${y}What are the tasks[1,2,3..]${h} ${JHB} ")
 read -p "${READS_A}" principal_variable
 
 #
@@ -102,7 +125,7 @@ if [[ ${principal_variable} == 1 ]]; then
         # 如果不存在
         touch ${MIRRORLIST_FILE} && sh sh ${MIRROR_SH}
     fi
-    bash ${LIST_IN}
+    bash ${0}
 fi
 
 #========检查网络  2
@@ -113,14 +136,14 @@ if [[ ${principal_variable} == 2 ]]; then
     echo -e ":: Ethernet: ${r}${ETHERNET}${h}" 2> $null
     echo -e ":: Wifi:   ${r}${WIFI}${h}" 2> $null 
 
-    READS_B=$(echo -e "${y}:: ==>> Query Network: Ethernet[1] Wifi[2] Configure[3] Exit[4]? -=> ${h}")
+    READS_B=$(echo -e "${PSG} ${y}Query Network: Ethernet[1] Wifi[2] Configure[3] Exit[4]? ${h}${JHB} ")
     read -p "${READS_B}" wlink
         case $wlink in
             1) 
                 clear;
                 ifconfig ${ETHERNET} 2> /dev/null || echo "Please configure the network first." &&  ping -I ${ETHERNET} -c 3 14.215.177.38 
                 sleep 1
-                bash ${LIST_IN}      
+                bash ${0}      
             ;;
             2) 
                 echo;
@@ -128,7 +151,7 @@ if [[ ${principal_variable} == 2 ]]; then
                 iwlist ${WIFI} scan | grep "ESSID:"
             ;;
             3) 
-                READNET_A=$(echo -e ":: Configure Network WIFI[1] ETHERNET[2] -=> ")
+                READNET_A=$(echo -e "${PSG} ${y}Configure Network WIFI[1] ETHERNET[2] ${JHB} ")
                 read -p "${READNET_A}" SNET
                     case ${SNET} in
                         1) 
@@ -137,22 +160,22 @@ if [[ ${principal_variable} == 2 ]]; then
                             ip link set ${ETHERNET} up
                             ifconfig ${ETHERNET} up
                             systemctl enable dhcpcd &> $null
-                            bash ${LIST_IN}
+                            bash ${0}
                             sleep 1
                         ;;
                         2)
                             wifi-menu
                             sleep 2
-                            bash ${LIST_IN}
+                            bash ${0}
                         ;;
                         3)
                             sleep 2
-                            bash ${LIST_IN}
+                            bash ${0}
                         ;;
                     esac
             ;; 
             4) 
-                bash ${LIST_IN}
+                bash ${0}
             ;;
         esac
 fi
@@ -189,7 +212,7 @@ if [[ ${principal_variable} == 4 ]];then
     echo -e "${wh}:: ==>> Installation Drive   ${h}${b}*${h}   ${w}[5]${h}"
     echo "---------------------------------------------"
 echo;
-    READS_C=$(echo -e "${y}:: ==>> What are the tasks[1,2,3..] Exit [Q] -=> ${h}")
+    READS_C=$(echo -e "${PSG} ${y} What are the tasks[1,2,3..] Exit [Q] ${h}${JHB} ")
     read -p "${READS_C}" tasks
 #
 #==========磁盘分区==========11111111111
@@ -200,7 +223,7 @@ echo;
             echo;
             #---AAAA 20----------------磁盘分区-------------------A---#
            # 选择磁盘 #parted /dev/sdb mklabel gpt   转换格式 GPT
-            READDISK_A=$(echo -e "${y}:: ==>> Select disk: ${g}/dev/sdX | sdX -=> ${h}")
+            READDISK_A=$(echo -e "${PSY} ${y} Select disk: ${g}/dev/sdX | sdX ${h}${JHB} ")
             read -p "${READDISK_A}"  DISKS_ID  #给用户输入接口
                 DISK_NAMEL_A=$(echo "${DISKS_ID}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
                 if echo $DISK_NAMEL_B |  egrep "^[a-z]*$" &> ${null} ; then
@@ -217,7 +240,7 @@ echo;
                 echo;
                 lsblk | egrep "sda|sdb|sdc|sdd|sdg|nvme"
                 echo;
-                READDISK_B=$(echo -e "${y}:: ==>> Choose your root[/] partition: ${g}/dev/sdX[0-9] | sdX[0-9] -=> ${h}")
+                READDISK_B=$(echo -e "${y}:: ==>> Choose your root[/] partition: ${g}/dev/sdX[0-9] | sdX[0-9] ${h}${JHB} ")
                 read -p "${READDISK_B}"  DISK_LIST_ROOT   #给用户输入接口
                     DISK_NAMEL_B=$(echo "${DISK_LIST_ROOT}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
                     if echo ${DISK_NAMEL_B} | egrep "^sd[a-z][0-9]$" &> ${null} ; then
@@ -234,7 +257,7 @@ echo;
                 echo;
                 lsblk | egrep "sda|sdb|sdc|sdd|sdg|nvme"
                 echo;
-                READDISK_C=$(echo -e "${y}:: ==>> Choose your EFI / BOOT partition: ${g}/dev/sdX[0-9] | sdX[0-9] -=> ${h}")
+                READDISK_C=$(echo -e "${y}:: ==>> Choose your EFI / BOOT partition: ${g}/dev/sdX[0-9] | sdX[0-9] ${h}${JHB} ")
                 read -p "${READDISK_C}"  DISK_LIST_GRUB   #给用户输入接口
                     DISK_NAMEL_C=$(echo "${DISK_LIST_GRUB}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
                     if echo ${DISK_NAMEL_C} | egrep "^sd[a-z][0-9]$" &> ${null} ; then
@@ -250,10 +273,11 @@ echo;
                 echo
                 lsblk | egrep "sda|sdb|sdc|sdd|sdg|nvme"
                 echo;
-                READDISK_D=$(echo -e "${y}:: ==>> Please select the size of swapfile: ${g}[example:512M-4G ~] -=> ${h}")
+                READDISK_D=$(echo -e "${y}:: ==>> Please select the size of swapfile: ${g}[example:512M-4G ~] ${h}${JHB} ")
                 read -p "${READDISK_D}"  DISK_LIST_SWAP     #给用户输入接口
                     DISK_NAMEL_D=$(echo "${DISK_LIST_SWAP}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
                     if echo ${DISK_NAMEL_D} | egrep "^[0-9]*[A-Z]$" &> ${null} ; then
+                        echo -e ""
                         fallocate -l ${DISK_NAMEL_D} /mnt/swapfile
                         chmod 600 /mnt/swapfile
                         mkswap /mnt/swapfile
@@ -265,7 +289,7 @@ echo;
                         exit 23    # 分区时输入错误，退出码。
                     fi
             echo -e "${wg} ::==>> Partition complete. ${h}"
-            bash ${LIST_IN} 
+            bash ${0} 
         fi 
 #
 #========== 安装及匹配系统文件 ==========222222222222222
@@ -280,16 +304,25 @@ echo;
 	        sleep 2
             echo -e ":: ${r}Configure Fstab File.${h}" #配置Fstab文件
 	            genfstab -U /mnt >> /mnt/etc/fstab
-            sleep 2
+            clear;
+            echo;
+            echo;
+            echo -e "${wg}#======================================================#${h}"
+            echo -e "${wg}#::  System components installation completed.         #${h}"            
+            echo -e "${wg}#::  Entering chroot mode.                             #${h}"
+            echo -e "${wg}#::  Execute in 3 seconds.                             #${h}"
+            echo -e "${wg}#::  Later operations are oriented to the new system.  #${h}"
+            echo -e "${wg}#======================================================#${h}"
+            sleep 3
             echo
                 cat $0 > /mnt/Arch_install.sh  && chmod +x /mnt/Arch_install.sh
                 arch-chroot /mnt /bin/bash /Arch_install.sh
                 
-            echo -e "\033[1;43m#====================================================#${h}"
-            echo -e "\033[1;43m#::  Next you need to execute:                       #${h}"
-            echo -e "\033[1;43m#::  arch-chroot /mnt /bin/bash                      #${h}"
-            echo -e "\033[1;43m#::  Then you can install the driver or software.。  #${h}"
-            echo -e "\033[1;43m#====================================================#${h}"
+            echo -e "${ws}#====================================================#${h}"
+            echo -e "${ws}#::  Next you need to execute:                       #${h}"
+            echo -e "${ws}#::  arch-chroot /mnt /bin/bash                      #${h}"
+            echo -e "${ws}#::  Then you can install the driver or software.。  #${h}"
+            echo -e "${ws}#====================================================#${h}"
             sleep 5
             exit 0
         fi
@@ -310,11 +343,11 @@ if [[ ${tasks} == 3 ]];then
                     echo -e "${r} Grub installed failed ${h}"
                     echo -e "${g}     `efibootmgr`  ${h}"
 
-            echo -e "\033[1;43m#====================================================#${h}"
-            echo -e "\033[1;43m#::  Next you need to execute:                       #${h}"
-            echo -e "\033[1;43m#::  arch-chroot /mnt /bin/bash                      #${h}"
-            echo -e "\033[1;43m#::  Then you can install the driver or software.。  #${h}"
-            echo -e "\033[1;43m#====================================================#${h}"
+            echo -e "${ws}#====================================================#${h}"
+            echo -e "${ws}#::  Next you need to execute:                       #${h}"
+            echo -e "${ws}#::  arch-chroot /mnt /bin/bash                      #${h}"
+            echo -e "${ws}#::  Then you can install the driver or software.。  #${h}"
+            echo -e "${ws}#====================================================#${h}"
             sleep 10
             exit 0
         fi
