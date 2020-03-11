@@ -185,8 +185,8 @@ if [[ ${principal_variable} == 4 ]];then
     echo -e "${wh}:: ==>> Disk partition       ${h}${r}**${h}  ${w}[1]${h}"
     echo -e "${wh}:: ==>> Install System Files ${h}${r}**${h}  ${w}[2]${h}"
     echo -e "${wh}:: ==>> Installation GRUB    ${h}${r}**${h}  ${w}[3]${h}"
-    echo -e "${wh}:: ==>> Installation Desktop ${h}${b}*   ${w}[4]${h}"    
-    echo -e "${wh}:: ==>> Installation Drive   ${h}${b}*   ${w}[5]${h}"
+    echo -e "${wh}:: ==>> Installation Desktop ${h}${b}*${h}   ${w}[4]${h}"    
+    echo -e "${wh}:: ==>> Installation Drive   ${h}${b}*${h}   ${w}[5]${h}"
     echo "---------------------------------------------"
 echo;
     READS_C=$(echo -e "${y}:: ==>> What are the tasks[1,2,3..] Exit [Q] -=> ${h}")
@@ -203,14 +203,15 @@ echo;
             READDISK_A=$(echo -e "${y}:: ==>> Select disk: ${g}/dev/sdX | sdX -=> ${h}")
             read -p "${READDISK_A}"  DISKS_ID  #给用户输入接口
                 DISK_NAMEL_A=$(echo "${DISKS_ID}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
-                if echo $DISK_NAMEL_B |  egrep "^[a-z]*$" &>/dev/null ; then
+                if echo $DISK_NAMEL_B |  egrep "^[a-z]*$" &> ${null} ; then
                     cfdisk /dev/${DISK_NAMEL_A}  
                 else
                     clear;
+                    echo;
                     echo -e "${r} ==>> Error code [20] Please input: /dev/sdX | sdX? !!! ${h}"
                     exit 20    # 分区时输入错误，退出码。
                 fi
-
+                clear;
                 #-------------------分区步骤结束，进入下一个阶段 格式和与挂载分区----------------B------#
                 #---BBBB 21----------------root [/]----------------B------#
                 echo;
@@ -219,12 +220,13 @@ echo;
                 READDISK_B=$(echo -e "${y}:: ==>> Choose your root[/] partition: ${g}/dev/sdX[0-9] | sdX[0-9] -=> ${h}")
                 read -p "${READDISK_B}"  DISK_LIST_ROOT   #给用户输入接口
                     DISK_NAMEL_B=$(echo "${DISK_LIST_ROOT}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
-                    if echo ${DISK_NAMEL_B} | egrep "^sd[a-z][0-9]$" &>/dev/null ; then
+                    if echo ${DISK_NAMEL_B} | egrep "^sd[a-z][0-9]$" &> ${null} ; then
                         mkfs.ext4 /dev/${DISK_NAMEL_B}
                         mount /dev/${DISK_NAMEL_B} /mnt
-                        ls /sys/firmware/efi/efivars &> /dev/null && mkdir -p /mnt/boot/efi || mkdir -p /mnt/boot
+                        ls /sys/firmware/efi/efivars &> ${null} && mkdir -p /mnt/boot/efi || mkdir -p /mnt/boot
                     else
                         clear;
+                        echo;
                         echo -e "${r} ==>> Error code [21] Please input: /dev/sdX[0-9] | sdX[0-9] !!! ${h}"
                         exit 21    # 分区时输入错误，退出码。
                     fi
@@ -235,11 +237,12 @@ echo;
                 READDISK_C=$(echo -e "${y}:: ==>> Choose your EFI / BOOT partition: ${g}/dev/sdX[0-9] | sdX[0-9] -=> ${h}")
                 read -p "${READDISK_C}"  DISK_LIST_GRUB   #给用户输入接口
                     DISK_NAMEL_C=$(echo "${DISK_LIST_GRUB}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
-                    if echo ${DISK_NAMEL_C} | egrep "^sd[a-z][0-9]$" &>/dev/null ; then
+                    if echo ${DISK_NAMEL_C} | egrep "^sd[a-z][0-9]$" &> ${null} ; then
                         mkfs.vfat /dev/${DISK_NAMEL_C}
-                        ls /sys/firmware/efi/efivars &> /dev/null && mount /dev/${DISK_NAMEL_C} /mnt/boot/efi || mount /dev/${DISK_NAMEL_C} /mnt/boot
+                        ls /sys/firmware/efi/efivars &> ${null} && mount /dev/${DISK_NAMEL_C} /mnt/boot/efi || mount /dev/${DISK_NAMEL_C} /mnt/boot
                     else
                         clear;
+                        echo;
                         echo -e "${r} ==>> Error code [22] Please input: /dev/sdX[0-9] | sdX[0-9] !!! ${h}"
                         exit 22    # 分区时输入错误，退出码。
                     fi
@@ -250,13 +253,14 @@ echo;
                 READDISK_D=$(echo -e "${y}:: ==>> Please select the size of swapfile: ${g}[example:512M-4G ~] -=> ${h}")
                 read -p "${READDISK_D}"  DISK_LIST_SWAP     #给用户输入接口
                     DISK_NAMEL_D=$(echo "${DISK_LIST_SWAP}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
-                    if echo ${DISK_NAMEL_D} | egrep "^[0-9]*[A-Z]$" &>/dev/null ; then
+                    if echo ${DISK_NAMEL_D} | egrep "^[0-9]*[A-Z]$" &> ${null} ; then
                         fallocate -l ${DISK_NAMEL_D} /mnt/swapfile
                         chmod 600 /mnt/swapfile
                         mkswap /mnt/swapfile
                         swapon /mnt/swapfile
                     else
                         clear;
+                        echo;
                         echo -e "${r} ==>> Error code [23] Please input size: [example:512M-4G ~] !!! ${h}"
                         exit 23    # 分区时输入错误，退出码。
                     fi
@@ -278,8 +282,9 @@ echo;
 	            genfstab -U /mnt >> /mnt/etc/fstab
             sleep 2
             echo
-                cp -rf ${LIST_IN} /mnt &> $nul
-                arch-chroot /mnt /bin/bash $0
+                cat $0 > /mnt/Arch_install.sh  && chmod +x /mnt/Arch_install.sh
+                arch-chroot /mnt /bin/bash /Arch_install.sh
+                
             echo -e "\033[1;43m#====================================================#${h}"
             echo -e "\033[1;43m#::  Next you need to execute:                       #${h}"
             echo -e "\033[1;43m#::  arch-chroot /mnt /bin/bash                      #${h}"
@@ -297,8 +302,8 @@ if [[ ${tasks} == 3 ]];then
             grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Archlinux
             grub-mkconfig -o /boot/grub/grub.cfg
             echo -e "${g}:: ==>> Configure enable Network.${h}"      #配置网络
-            systemctl enable NetworkManager &> /dev/null    #
-                if efibootmgr | grep "Archlinux" &> /dev/null ; then
+            systemctl enable NetworkManager &> ${null}    #
+                if efibootmgr | grep "Archlinux" &> ${null} ; then
                     echo -e "${g} Grub installed successfully -=> [Archlinux] ${h}"
                     echo -e "${g}     `efibootmgr | grep "Archlinux"`  ${h}"
                 else
