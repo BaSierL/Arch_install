@@ -225,7 +225,7 @@ echo;
             READDISK_A=$(echo -e "${PSY} ${y} Select disk: ${g}/dev/sdX | sdX ${h}${JHB} ")
             read -p "${READDISK_A}"  DISKS_ID  #给用户输入接口
                 DISK_NAMEL_A=$(echo "${DISKS_ID}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
-                if echo $DISK_NAMEL_B |  egrep "^[a-z]*$" &> ${null} ; then
+                if echo $DISK_NAMEL_B |  egrep "^[a-z]$" &> ${null} ; then
                     cfdisk /dev/${DISK_NAMEL_A}  
                 else
                     clear;
@@ -291,11 +291,11 @@ echo;
             bash ${0} 
         fi 
 #
-#========== 安装及匹配系统文件 ==========222222222222222
+#========== 安装及配置系统文件 ==========222222222222222
         if [[ ${tasks} == 2 ]];then
             echo -e "${wg}Update the system clock.${h}"  #更新系统时间
                 timedatectl set-ntp true
-            sleep 2
+            sleep 4
             echo;
             echo -e ":: ${r}Install the base packages.${h}"   #安装基本系统
             echo;
@@ -331,6 +331,10 @@ echo;
                         echo -e "${g}     `efibootmgr`  ${h}"   
                         echo; 
                     fi
+                    rm -rf /mnt/etc/pacman.conf 2&>${null}
+                    rm -rf /mnt/etc/pacman.d/mirrorlist 2&>${null}
+                    cp -rf /etc/pacman.conf /mnt/etc/pacman.conf 2&>${null}
+                    cp -rf /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist 2&>${null}
                         echo -e "${PSG} ${w}Configure enable Network.${h}"   
                     systemctl enable NetworkManager &> ${null}        #配置网络 加入开机启动
                     #---------------------------------------------------------------------------#
@@ -347,7 +351,7 @@ echo;
                     echo "LANG=en_US.UTF-8" > /etc/locale.conf       # 系统语言 "英文" 默认为英文   
                     # echo "LANG=zh_CN.UTF-8" > /etc/locale.conf       # 系统语言 "中文"
                     echo -e "${PSG} ${w}Install Fonts. ${h}"
-                    pacman -S wqy-microhei wqy-zenhei ttf-dejavu ttf-ubuntu-font-family noto-fonts # 安装语言包
+                    pacman -Sy wqy-microhei wqy-zenhei ttf-dejavu ttf-ubuntu-font-family noto-fonts # 安装语言包
             echo -e "${ws}#====================================================#${h}" #本区块退出后的提示
             echo -e "${ws}#::  Next you need to execute:                       #${h}"
             echo -e "${ws}#::  arch-chroot /mnt /bin/bash                      #${h}"
@@ -358,14 +362,74 @@ echo;
         fi
 
 fi
-#==========  Installation GRUB ===========3333333333333
-if [[ ${tasks} == 3 ]];then
+#==========  进入系统后的配置 ===========3333333333333
+if [[ ${tasks} == 4 ]];then
     #---------------------------------------------------------------------------#
-    # 配置用户 Root 密码
+    # 配置用户 Root 密码  
     #-----------------------------
     echo;
     SETTINGS_ROOT_PA=$(echo -e "${PSY} ${g}Settings ${y}Root Password.${h}${JHG} ")
     SETTINGS_ROOT_PB=$(echo -e "${PSY} ${g}Please enter the ${y}Root Password${h}${g} again.${h}${JHG} ")
+    SETTINGS_USERNAME=$(echo -e "${PSY} ${g}Settings UserName.${h}${JHG} ")
+    SETTINGS_USER_PASS=$(echo -e "${PSY} ${g}Settings Password.${h}${JHG} ")
+    read -p "${SETTINGS_ROOT_PA}" ROOT_PASSWORD_A
+    read -p "${SETTINGS_ROOT_PB}" ROOT_PASSWORD_B
+    if [${ROOT_PASSWORD_A} == ${ROOT_PASSWORD_B} ]; then
+        echo root:${ROOT_PASSWORD_B} | chpasswd &> $null
+        echo;
+        echo -e "${PSG} Root Password setting complete,[OK]"
+    else    
+        echo -e "${PSR} ${r}Two passwords are inconsistent. ${h}"
+        exit 30;
+    fi
+    #---------------------------------------------------------------------------#
+    # 配置用户
+    #-----------------------------
+    echo;
+    read -p "${SETTINGS_USERNAME}" USER_NAME
+    read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_A
+    read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_B
+    if [${USER_PASSWORD_A} == ${USER_PASSWORD_B} ]; then
+        useradd -m -g users -G wheel -s /bin/bash ${USER_NAME}
+        echo ${USER_NAME}:${USER_PASSWORD_B} | chpasswd &> $null
+        echo;
+        echo -e "${PSG} Password setting complete,[OK]"
+    else    
+        echo -e "${PSR} ${r}${USER_NAME} Two passwords are inconsistent. ${h}"
+        exit 31;
+    fi
+    #---------------------------------------------------------------------------#
+    # 更改sudo 配置
+    #-----------------------------
+    echo -e "${PSG} ${g}Configure Sudoers. ${h}"
+    function S_LINE() {
+        sed -n -e '/# %wheel ALL=(ALL) NOPASSWD: ALL/=' /etc/sudoers
+    }
+    SUDOERS_LIST=$(S_LINE)
+    chmod 770 /etc/sudoers
+        sed -i "${SUDOERS_LIST}i %wheel ALL=\(ALL\) NOPASSWD: ALL" /etc/sudoers || echo -e "${PSY} ${y}Configure Sudoers fail. ${h}"
+    chmod 440 /etc/sudoers
+
+#pacman -S mesa-libgl xf86-video-intel libva-intel-driver libvdpau-va-glmesa-demos    #intel
+#pacman -S alsa-utils pulseaudio pulseaudio-alsa  #安装声音软件包
+#pacman -S xorg-server xorg-xinit xorg-utils xorg-server-utils mesa #图像界面安装
+#pacman -S nvidia nvidia-settings xf86-video-nv   #英伟达
+#pacman -S create_ap   #无线AP
+#pacman -S xf86-input-libinput xf86-input-synaptics     #触摸板驱动
+fi
+
+##========退出 EXIT
+case $principal_variable in
+    q | Q | quit | QUIT)
+    clear;
+    echo;
+    echo -e "${wg}#----------------------------------#${h}"
+    echo -e "${wg}#:: script is over. Thank.         #${h}"
+    echo -e "${wg}#----------------------------------#${h}"
+    
+    exit 0
+esac
+enter the ${y}Root Password${h}${g} again.${h}${JHG} ")
     SETTINGS_USERNAME=$(echo -e "${PSY} ${g}Settings UserName.${h}${JHG} ")
     SETTINGS_USER_PASS=$(echo -e "${PSY} ${g}Settings Password.${h}${JHG} ")
     read -p "${SETTINGS_ROOT_PA}" ROOT_PASSWORD_A
