@@ -13,7 +13,6 @@ null="/dev/null"
 curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh > mirrorlist.sh
 
 
-
 #====脚本颜色变量-------------#
 r='\033[1;31m'	#---红
 g='\033[1;32m'	#---绿
@@ -92,7 +91,7 @@ WIFI_IP=`ip route | grep ${WIFI} &> ${null} && ip route list | grep ${WIFI} |  c
 #========选项
 echo -e "${b}||====================================================================||${h}"
 echo -e "${b}|| Script Name:        Arch Linux system installation script.        ${h}"  
-echo -e "${b}|| Author:             Basierl                                       ${h}"
+echo -e "${b}|| Author:             Auroot                                        ${h}"
 echo -e "${b}|| GitHub:	       ${bx}https://github.com/BaSierL/arch_install${h}        ${h}"
 echo -e "${g}|| Ethernet:           ${ETHERNET_IP:-No_network..}                                  ${h}"
 echo -e "${g}|| WIFI:	       ${WIFI_IP:-No_network.}                                   ${h}"
@@ -119,18 +118,18 @@ if [[ ${principal_variable} == 1 ]]; then
     # 检查"/etc/pacman.conf"文件是否存在
     if [ -e ${PACMANCONF_FILE}  ] ; then
         # 如果存在
-        sh ${MIRROR_SH}
+        sh ${MIRROR_SH}  || curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh > mirrorlist.sh  && sh ${MIRROR_SH}
     else
         # 如果不存在
-        touch ${PACMANCONF_FILE} && sh sh ${MIRROR_SH}
+        touch ${PACMANCONF_FILE} &&  sh ${MIRROR_SH} || curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh > mirrorlist.sh  && sh ${MIRROR_SH}
     fi
     # 检查"/etc/pacman.d/mirrorlist"文件是否存在
     if [ -e ${MIRRORLIST_FILE}  ] ; then    
         # 如果存在
-        sh ${MIRROR_SH}
+        sh ${MIRROR_SH} || curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh > mirrorlist.sh  && sh ${MIRROR_SH}
     else
         # 如果不存在
-        touch ${MIRRORLIST_FILE} && sh sh ${MIRROR_SH}
+        touch ${MIRRORLIST_FILE} && sh ${MIRROR_SH} || curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh > mirrorlist.sh  && sh ${MIRROR_SH}
     fi
     bash ${0}
 fi
@@ -143,45 +142,27 @@ if [[ ${principal_variable} == 2 ]]; then
     echo -e ":: Ethernet: ${r}${ETHERNET}${h}" 2> $null
     echo -e ":: Wifi:   ${r}${WIFI}${h}" 2> $null 
 
-    READS_B=$(echo -e "${PSG} ${y}Query Network: Ethernet[1] Wifi[2] Configure[3] Exit[4]? ${h}${JHB} ")
+    READS_B=$(echo -e "${PSG} ${y}Query Network: Ethernet[1] Wifi[2] Exit[3]? ${h}${JHB} ")
     read -p "${READS_B}" wlink
         case $wlink in
             1) 
-                clear;
-                ifconfig ${ETHERNET} 2&> /dev/null || echo "Please configure the network first." &&  ping -I ${ETHERNET} -c 3 14.215.177.38 
+                echo ":: One moment please............"
+                ls /usr/bin/ifconfig &> $null && echo ":: Install net-tools" ||  echo "y" |  pacman -S ifconfig
+                ip link set ${ETHERNET} up
+                ifconfig ${ETHERNET} up
+                systemctl restart dhcpcd  &&  ping -c 3 14.215.177.38 
                 sleep 1
-                bash ${0}      
+                bash ${0}    
             ;;
             2) 
                 echo;
-                echo ":: The following WiFi is available: "
-                iwlist ${WIFI} scan | grep "ESSID:"
+                wifi-menu &&  ping  -c 3 14.215.177.38
+                sleep 1 
+                bash ${0}
+                #echo ":: The following WiFi is available: "
+                #iwlist ${WIFI} scan | grep "ESSID:"
             ;;
             3) 
-                READNET_A=$(echo -e "${PSG} ${y}Configure Network WIFI[1] ETHERNET[2] ${JHB} ")
-                read -p "${READNET_A}" SNET
-                    case ${SNET} in
-                        1) 
-                            echo ":: One moment please............"
-                            ls /usr/bin/ifconfig &> $null && echo ":: Install net-tools" ||  echo "y" |  pacman -S ifconfig
-                            ip link set ${ETHERNET} up
-                            ifconfig ${ETHERNET} up
-                            systemctl enable dhcpcd &> $null
-                            bash ${0}
-                            sleep 1
-                        ;;
-                        2)
-                            wifi-menu
-                            sleep 2
-                            bash ${0}
-                        ;;
-                        3)
-                            sleep 2
-                            bash ${0}
-                        ;;
-                    esac
-            ;; 
-            4) 
                 bash ${0}
             ;;
         esac
@@ -210,18 +191,19 @@ fi
 if [[ ${principal_variable} == 4 ]];then
 #
     echo
-    echo -e "${r}      Install System Modular${h}"
+    echo -e "     ${w}***${h} ${r}Install System Modular${h} ${w}***${h}  "
     echo "---------------------------------------------"
     echo -e "${PSY} ${g}   Disk partition.         ${h}${r}**${h}  ${w}[1]${h}"
     echo -e "${PSY} ${g}   Install System Files.   ${h}${r}**${h}  ${w}[2]${h}"
-    echo -e "${PSG} ${g}   Installation Desktop.   ${h}${b}*${h}   ${w}[3]${h}"    
-    echo -e "${PSY} ${g}   Configurt System.       ${h}${r}**${h}  ${w}[4]${h}"
+    echo -e "${PSG} ${g}   Installation Drive.     ${h}${b}*${h}   ${w}[3]${h}"    
+    echo -e "${PSG} ${g}   Installation Desktop.   ${h}${b}*${h}   ${w}[4]${h}"  
+    echo -e "${PSY} ${g}   Configurt System.       ${h}${r}**${h}  ${w}[5]${h}"
     echo "---------------------------------------------"
-echo;
+    echo;
     READS_C=$(echo -e "${PSG} ${y} What are the tasks[1,2,3..] Exit [Q] ${h}${JHB} ")
     read -p "${READS_C}" tasks
 #
-#==========磁盘分区==========11111111111
+# list1==========磁盘分区==========11111111111
         if [[ ${tasks} == 1 ]];then
         clear;
             echo;   # 显示磁盘
@@ -298,7 +280,7 @@ echo;
             bash ${0} 
         fi 
 #
-#========== 安装及配置系统文件 ==========222222222222222
+# list2========== 安装及配置系统文件 ==========222222222222222
         if [[ ${tasks} == 2 ]];then
             echo -e "${wg}Update the system clock.${h}"  #更新系统时间
                 timedatectl set-ntp true
@@ -369,8 +351,102 @@ echo;
         fi
 
 fi
-#==========  进入系统后的配置 ===========3333333333333
+# list3------------------------------------------------------------------------------------------------------#
+#==========  Installation Drive. 驱动  ===========3333333333333
+if [[ ${tasks} == 3 ]];then
+    echo "${PSY} ${y}Still under development.....${h}" 
+    #---------------------------------------------------------------------------#
+    #  配置驱动
+    #-------------------
+    echo -e "${PSG} ${g}Installing Audio driver.${h}"
+    pacman -S alsa-utils pulseaudio pulseaudio-bluetooth pulseaudio-alsa  #安装声音软件包
+    echo "load-module module-bluetooth-policy" >> /etc/pulse/system.pa
+    echo "load-module module-bluetooth-discover" >> /etc/pulse/system.pa
+
+    echo -e "${PSG} ${g}Installing input driver.${h}"
+    pacman -S xf86-input-synaptics xf86-input-libinput create_ap     #触摸板驱动
+    echo;
+    READDISK_DRIVER_GPU=$(echo -e "${PSG} ${y}Please choose: Intel[1] AMD[2]${h} ${JHB} ")
+    read -p "${READDISK_DRIVER_GPU}"  DRIVER_GPU_ID
+        if  [[ `echo "${DRIVER_GPU_ID}" | grep -E "^1$"`  == "1" ]] ; then
+            pacman -S xf86-video-intel intel-ucode xf86-video-intel
+        elif [[ `echo "${DRIVER_GPU_ID}" | grep -E "^2$"`  == "2" ]] ; then
+            pacman -S xf86-video-ati amd-ucode
+        fi
+    lspci -k | grep -A 2 -E "(VGA|3D)"
+    echo;
+    READDISK_DRIVER_NVIDIA=$(echo -e "${PSG} ${y}Please choose: Nvidia[1] Exit[2]${h} ${JHB} ")
+    read -p "${READDISK_DRIVER_NVIDIA}"  DRIVER_NVIDIA_ID
+        if  [[ `echo "${DRIVER_GPU_ID}" | grep -E "^1$"`  == "1" ]] ; then
+            pacman -S nvidia nvidia-utils opencl-nvidia lib32-nvidia-utils lib32-opencl-nvidia mesa lib32-mesa-libgl  optimus-manager optimus-manager-qt 
+            systemctl enable optimus-manager.service
+            rm -f /etc/X11/xorg.conf 2&> ${null}
+            rm -f /etc/X11/xorg.conf.d/90-mhwd.conf 2&> ${null}
+
+            if [ -e "/usr/bin/gdm" ] ; then  # gdm管理器
+                pacman -S gdm-prime 
+                sed -i 's/#.*WaylandEnable=false/WaylandEnable=false/'  /etc/gdm/custom.conf
+            elif [ -e "/usr/bin/sddm" ] ; then
+                sed -i 's/DisplayCommand/# DisplayCommand/' /etc/sddm.conf
+                sed -i 's/DisplayStopCommand/# DisplayStopCommand/' /etc/sddm.conf
+            fi
+        elif [[ `echo "${DRIVER_GPU_ID}" | grep -E "^2$"`  == "2" ]] ; then
+            bash $0
+        fi      
+fi
+#------------------------------------------------------------------------------------------------------#
+# list4==========  Installation Desktop. 桌面环境 ==========444444444444444444444444444
 if [[ ${tasks} == 4 ]];then
+DESKTOP_ID="0"
+    echo
+    echo -e "     ${w}***${h} ${b}Install Desktop${h} ${w}***${h}  "
+    echo "---------------------------------"
+    echo -e "${PSB} ${g}   KDE plasma.     ${h}${w}[1]${h}"
+    echo -e "${PSB} ${g}   Gnome.          ${h}${w}[2]${h}"
+    echo -e "${PSB} ${g}   Deepin.         ${h}${w}[3]${h}"    
+    #echo -e "${PSB} ${g}   xfce.           ${h}${w}[4]${h}"  
+    #echo -e "${PSB} ${g}   i3wm.           ${h}${w}[5]${h}"
+    echo "---------------------------------"                           
+    echo;
+    CHOICE_ITEM_DESKTOP=$(echo -e "${PSG} ${y} Please select desktop${h} ${JHB} ")
+    read -p "${CHOICE_ITEM_DESKTOP}"  DESKTOP_ID
+        if  [[ `echo "${DESKTOP_ID}" | grep -E "^1$"`  == "1" ]] ; then
+            DESKTOP_ENVS="plasma"
+            pacman -S xorg xorg-server xorg-xinit mesa sddm sddm-kcm palsma palsma-desktop konlose dolphin kate \
+            plasma-pa xorg-xwininfo ttf-dejavu ttf-liberation  thunar gvfs gvfs-smb gnome-keyring \
+            cifs-utils powerdevil unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp kio-extras 
+            bash ${0} 
+            #-------------------------------------------------------------------------------# 
+        elif  [[ `echo "${DESKTOP_ID}" | grep -E "^2$"`  == "2" ]] ; then
+            DESKTOP_ENVS="gnome"
+            pacman -S xorg xorg-server xorg-xinit mesa gnome gnome-extra gdm gnome-shell gvfs-mtp \                 
+            gnome-tweaks gnome-shell-extensions unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp 
+            bash ${0}            
+            #-------------------------------------------------------------------------------#
+        elif  [[ `echo "${DESKTOP_ID}" | grep -E "^3$"`  == "3" ]] ; then
+            DESKTOP_ENVS="deepin"
+            pacman -S xorg xorg-server xorg-xinit mesa deepin deepin-extra lightdm \
+            lightdm-deepin-greeter unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp 
+            bash ${0}           
+            #-------------------------------------------------------------------------------#
+        #elif  [[ `echo "${DESKTOP_ID}" | grep -E "^4$"`  == "4" ]] ; then
+        #    DESKTOP_ENVS="xfce"
+        #    pacman -S xorg xorg-server xorg-xinit mesa xfce4 xfce4-goodies light-locker \
+        #    xfce4-power-manager libcanberra libcanberra-pulse unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp 
+        #    bash ${0} 
+            #-------------------------------------------------------------------------------#
+         #elif  [[ `echo "${DESKTOP_ID}" | grep -E "^5$"`  == "5" ]] ; then
+         #   echo "${PSY} ${y}Subsequent updates.....${h}"
+            #DESKTOP_ENVS="i3wm"   
+         #   bash ${0} 
+            #-------------------------------------------------------------------------------#    
+        fi
+fi
+#------------------------------------------------------------------------------------------------------#
+
+#------------------------------------------------------------------------------------------------------#
+# list5==========  进入系统后的配置 ===========55555555555555555555
+if [[ ${tasks} == 5 ]];then
     #---------------------------------------------------------------------------#
     # 配置用户 Root 密码  
     #-----------------------------
@@ -416,13 +492,32 @@ if [[ ${tasks} == 4 ]];then
     chmod 770 /etc/sudoers
         sed -i "${SUDOERS_LIST}i %wheel ALL=\(ALL\) NOPASSWD: ALL" /etc/sudoers || echo -e "${PSY} ${y}Configure Sudoers fail. ${h}"
     chmod 440 /etc/sudoers
+    #---------------------------------------------------------------------------#
+    #  配置桌面环境
+    #----------------------------- 
+    #   1.保存用户选择的变量，判断用户安装的什么桌面 优点：快速判断  缺点：必须的在脚本中完成一次桌面安装后，才知道用户是什么桌面。 保存变量为：${DESKTOP_ENVS}
+    #   2.首先制定每个桌面坏境配置  使用保存的变量，执行对应的配置命令  $DESKTOP_SESSION   env | grep DESKTOP_SESSION= 
 
-#pacman -S mesa-libgl xf86-video-intel libva-intel-driver libvdpau-va-glmesa-demos    #intel
-#pacman -S alsa-utils pulseaudio pulseaudio-alsa  #安装声音软件包
-#pacman -S xorg-server xorg-xinit xorg-utils xorg-server-utils mesa #图像界面安装
-#pacman -S nvidia nvidia-settings xf86-video-nv   #英伟达
-#pacman -S create_ap   #无线AP
-#pacman -S xf86-input-libinput xf86-input-synaptics     #触摸板驱动
+    if [[ `echo "${DESKTOP_ENVS}"` == "plasma" ]] ; then  #------------ plasma
+    echo -e "${PSG} ${g}Configuring desktop environment.${h}"
+        systemctl enable sddm
+        echo "exec startkde" >> /etc/X11/xinit/xinitrc
+        cp -rf /etc/X11/xinit/xinitrc  $USER/.xinitrc
+    echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
+    elif [[ `echo "${DESKTOP_ENVS}"` == "gnome" ]] ; then  #------------ gnome
+    echo -e "${PSG} ${g}Configuring desktop environment.${h}"
+        systemctl enable gdm
+        echo "exec gnome=session" >> /etc/X11/xinit/xinitrc
+        cp -rf /etc/X11/xinit/xinitrc  $USER/.xinitrc
+    echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
+    elif [[ `echo "${DESKTOP_ENVS}"` == "deepin" ]] ; then  #------------ deepin
+    echo -e "${PSG} ${g}Configuring desktop environment.${h}"
+        systemctl enable lightdm
+        sed -i 's/greeter-session=example-gtk-gnome/greeter-session=lightdm-deepin-greeter/'  /etc/lightdm/lightdm.conf
+        echo "exec startdde" >> /etc/X11/xinit/xinitrc
+        cp -rf /etc/X11/xinit/xinitrc  $USER/.xinitrc
+    echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
+    fi
 fi
 
 ##========退出 EXIT
@@ -433,6 +528,5 @@ case $principal_variable in
     echo -e "${wg}#----------------------------------#${h}"
     echo -e "${wg}#:: script is over. Thank.         #${h}"
     echo -e "${wg}#----------------------------------#${h}"
-    
     exit 0
 esac
