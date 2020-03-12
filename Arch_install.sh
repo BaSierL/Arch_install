@@ -7,15 +7,20 @@
 # URL Gitee ： https://gitee.com/auroot/arch_install.git
 
 # 给予mirrorlist.sh执行权限，否则将我发导入源。
-chmod +x $PWD/mirrorlist.sh
 
-#====脚本颜色变量-------------
+null="/dev/null"
+#----------下载需要的脚本----------#
+curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh > mirrorlist.sh
+
+
+
+#====脚本颜色变量-------------#
 r='\033[1;31m'	#---红
 g='\033[1;32m'	#---绿
 y='\033[1;33m'	#---黄
 b='\033[1;36m'	#---蓝
 w='\033[1;37m'	#---白
-#-----------------------------
+#-----------------------------#
 rw='\033[1;41m'    #--红白
 wg='\033[1;42m'    #--白绿
 ws='\033[1;43m'    #--白褐
@@ -27,7 +32,7 @@ h='\033[0m'		   #---后缀
 bx='\033[1;4;36m'  #---蓝 下划线
 wy='\033[1;41m' 
 h='\033[0m'
-#-----------------------------
+#-----------------------------#
 # 交互 蓝
 JHB=$(echo -e "${b}-=>${h}")
 # 交互 红
@@ -48,7 +53,7 @@ PSY=$(echo -e "${y} ::==>${h}")
 #-----------------------------
 
 #========变量值
-null="/dev/null"
+
 clear;
 ECHOA=`echo -e "${w}    _             _       _     _                  ${h}"`  
 ECHOB=`echo -e "${g}   / \   _ __ ___| |__   | |   (_)_ __  _   ___  _        ${h}"` 
@@ -61,6 +66,8 @@ echo -e "$ECHOA\n$ECHOB\n$ECHOC\n$ECHOD\n$ECHOE" | lolcat 2> ${null} || echo -e 
 tmps="$PWD/arch_tmp"
 # mirrorlist.sh 脚本位置
 MIRROR_SH="$PWD/mirrorlist.sh"
+chmod +x $PWD/mirrorlist.sh 2&>${null}
+
 # 位置
 LIST_IN="$PWD/$0"
 # 初始密码
@@ -141,7 +148,7 @@ if [[ ${principal_variable} == 2 ]]; then
         case $wlink in
             1) 
                 clear;
-                ifconfig ${ETHERNET} 2> /dev/null || echo "Please configure the network first." &&  ping -I ${ETHERNET} -c 3 14.215.177.38 
+                ifconfig ${ETHERNET} 2&> /dev/null || echo "Please configure the network first." &&  ping -I ${ETHERNET} -c 3 14.215.177.38 
                 sleep 1
                 bash ${0}      
             ;;
@@ -370,66 +377,6 @@ if [[ ${tasks} == 4 ]];then
     echo;
     SETTINGS_ROOT_PA=$(echo -e "${PSY} ${g}Settings ${y}Root Password.${h}${JHG} ")
     SETTINGS_ROOT_PB=$(echo -e "${PSY} ${g}Please enter the ${y}Root Password${h}${g} again.${h}${JHG} ")
-    SETTINGS_USERNAME=$(echo -e "${PSY} ${g}Settings UserName.${h}${JHG} ")
-    SETTINGS_USER_PASS=$(echo -e "${PSY} ${g}Settings Password.${h}${JHG} ")
-    read -p "${SETTINGS_ROOT_PA}" ROOT_PASSWORD_A
-    read -p "${SETTINGS_ROOT_PB}" ROOT_PASSWORD_B
-    if [${ROOT_PASSWORD_A} == ${ROOT_PASSWORD_B} ]; then
-        echo root:${ROOT_PASSWORD_B} | chpasswd &> $null
-        echo;
-        echo -e "${PSG} Root Password setting complete,[OK]"
-    else    
-        echo -e "${PSR} ${r}Two passwords are inconsistent. ${h}"
-        exit 30;
-    fi
-    #---------------------------------------------------------------------------#
-    # 配置用户
-    #-----------------------------
-    echo;
-    read -p "${SETTINGS_USERNAME}" USER_NAME
-    read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_A
-    read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_B
-    if [${USER_PASSWORD_A} == ${USER_PASSWORD_B} ]; then
-        useradd -m -g users -G wheel -s /bin/bash ${USER_NAME}
-        echo ${USER_NAME}:${USER_PASSWORD_B} | chpasswd &> $null
-        echo;
-        echo -e "${PSG} Password setting complete,[OK]"
-    else    
-        echo -e "${PSR} ${r}${USER_NAME} Two passwords are inconsistent. ${h}"
-        exit 31;
-    fi
-    #---------------------------------------------------------------------------#
-    # 更改sudo 配置
-    #-----------------------------
-    echo -e "${PSG} ${g}Configure Sudoers. ${h}"
-    function S_LINE() {
-        sed -n -e '/# %wheel ALL=(ALL) NOPASSWD: ALL/=' /etc/sudoers
-    }
-    SUDOERS_LIST=$(S_LINE)
-    chmod 770 /etc/sudoers
-        sed -i "${SUDOERS_LIST}i %wheel ALL=\(ALL\) NOPASSWD: ALL" /etc/sudoers || echo -e "${PSY} ${y}Configure Sudoers fail. ${h}"
-    chmod 440 /etc/sudoers
-
-#pacman -S mesa-libgl xf86-video-intel libva-intel-driver libvdpau-va-glmesa-demos    #intel
-#pacman -S alsa-utils pulseaudio pulseaudio-alsa  #安装声音软件包
-#pacman -S xorg-server xorg-xinit xorg-utils xorg-server-utils mesa #图像界面安装
-#pacman -S nvidia nvidia-settings xf86-video-nv   #英伟达
-#pacman -S create_ap   #无线AP
-#pacman -S xf86-input-libinput xf86-input-synaptics     #触摸板驱动
-fi
-
-##========退出 EXIT
-case $principal_variable in
-    q | Q | quit | QUIT)
-    clear;
-    echo;
-    echo -e "${wg}#----------------------------------#${h}"
-    echo -e "${wg}#:: script is over. Thank.         #${h}"
-    echo -e "${wg}#----------------------------------#${h}"
-    
-    exit 0
-esac
-enter the ${y}Root Password${h}${g} again.${h}${JHG} ")
     SETTINGS_USERNAME=$(echo -e "${PSY} ${g}Settings UserName.${h}${JHG} ")
     SETTINGS_USER_PASS=$(echo -e "${PSY} ${g}Settings Password.${h}${JHG} ")
     read -p "${SETTINGS_ROOT_PA}" ROOT_PASSWORD_A
