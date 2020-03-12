@@ -282,14 +282,14 @@ if [[ ${principal_variable} == 4 ]];then
 # list2========== 安装及配置系统文件 ==========222222222222222
     if [[ ${tasks} == 2 ]];then
             echo -e "${wg}Update the system clock.${h}"  #更新系统时间
-                timedatectl set-ntp true
+            timedatectl set-ntp true
             sleep 4
             echo;
-            echo -e ":: ${r}Install the base packages.${h}"   #安装基本系统
+            echo -e "${PSG} ${g}Install the base packages.${h}"   #安装基本系统
             echo;
                 pacstrap /mnt base base-devel linux linux-firmware linux-headers ntfs-3g networkmanager net-tools 
 	        sleep 2
-            echo -e ":: ${r}Configure Fstab File.${h}" #配置Fstab文件
+            echo -e "${PSG}  ${r}Configure Fstab File.${h}" #配置Fstab文件
 	            genfstab -U /mnt >> /mnt/etc/fstab
             clear;
             echo;
@@ -307,11 +307,11 @@ if [[ ${principal_variable} == 4 ]];then
             cp -rf /etc/pacman.conf /mnt/etc/pacman.conf.bak 2&>${null}
             cp -rf /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist.bak 2&>${null}
 
-    cat $0 > /mnt/Arch_install.sh  && chmod +x /mnt/Arch_install.sh
-    arch-chroot /mnt /bin/bash /Arch_install.sh
+            cat $0 > /mnt/Arch_install.sh  && chmod +x /mnt/Arch_install.sh
+            arch-chroot /mnt /bin/bash /Arch_install.sh
             cp -rf /etc/pacman.conf.bak /mnt/etc/pacman.conf 2&>${null}
             cp -rf /etc/pacman.d/mirrorlist.bak /mnt/etc/pacman.d/mirrorlist 2&>${null}
-        fi
+    fi
 # list3------------------------------------------------------------------------------------------------------#
 #==========  Installation Drive. 驱动  ===========3333333333333
         if [[ ${tasks} == 21 ]];then
@@ -376,7 +376,7 @@ if [[ ${principal_variable} == 4 ]];then
                 DESKTOP_DESKTOP=$(tail -n 1 /etc/passwd | cut -d":" -f 1)
             else
                 #echo -e "${PSR} ${r}Error code [40] Please create a user first ! ${h}"
-                sh -c "$(https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)"
+                sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)"
                 sleep 3                  
             fi
             CHOICE_ITEM_DESKTOP=$(echo -e "${PSG} ${y} Please select desktop${h} ${JHB} ")
@@ -439,7 +439,7 @@ if [[ ${principal_variable} == 4 ]];then
             DESKTOP_DESKTOP=$(tail -n 1 /etc/passwd | cut -d":" -f 1)
         else
             #echo -e "${PSR} ${r}Error code [40] Please create a user first ! ${h}"
-            sh -c "$(https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)"
+            sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)"
             sleep 3                  
         fi
             sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh)" 
@@ -475,6 +475,7 @@ if [[ ${principal_variable} == 4 ]];then
                     # echo "LANG=zh_CN.UTF-8" > /etc/locale.conf       # 系统语言 "中文"
                     echo -e "${PSG} ${w}Install Fonts. ${h}"
                     pacman -Sy wqy-microhei wqy-zenhei ttf-dejavu ttf-ubuntu-font-family noto-fonts # 安装语言包
+
 echo -e "${ws}#======================================================#${h}" #本区块退出后的提示
 echo -e "${ws}#::                 Exit in 5/s                        #${h}"
 echo -e "${ws}#::  When finished, restart the computer.              #${h}"
@@ -482,7 +483,9 @@ echo -e "${ws}#::  If there is a problem during the installation     #${h}"
 echo -e "${ws}#::  please contact me. QQ:2763833502                  #${h}"
 echo -e "${ws}#======================================================#${h}"
 sleep 5
+    fi
 
+fi  # 安装ArchLinux    选项4
 ##========退出 EXIT
 
 case $principal_variable in
