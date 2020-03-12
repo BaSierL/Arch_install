@@ -2,7 +2,7 @@
 # Arch 安装脚本
 #### Script说明书 `注意大写的"A"`
 #### [**GitHub 仓库地址**](https://github.com/BaSierL/Arch_install)
-![输入图片说明](https://images.gitee.com/uploads/images/2020/0312/101913_b0e6e9cf_5700645.jpeg)
+![输入图片说明](https://images.gitee.com/uploads/images/2020/0312/101913_b0e6e9cf_5700645.jpeg "1 (2).jpg")
 
 **脚本主体：**`Arch_install.sh`  你需要给这个脚本执行[x]权限
 
