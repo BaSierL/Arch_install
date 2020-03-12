@@ -45,47 +45,53 @@ PSG=$(echo -e "${g} ::==>${h}")
 # 提示 黄
 PSY=$(echo -e "${y} ::==>${h}")
 #-----------------------------
-
-
-echo;
-SETTINGS_ROOT_PA=$(echo -e "${PSY} ${g}Settings ${y}Root Password.${h}${JHG} ")
-SETTINGS_ROOT_PB=$(echo -e "${PSY} ${g}Please enter the ${y}Root Password${h}${g} again.${h}${JHG} ")
-SETTINGS_USERNAME=$(echo -e "${PSY} ${g}Settings UserName.${h}${JHG} ")
-SETTINGS_USER_PASS=$(echo -e "${PSY} ${g}Settings Password.${h}${JHG} ")
-read -p "${SETTINGS_ROOT_PA}" ROOT_PASSWORD_A
-read -p "${SETTINGS_ROOT_PB}" ROOT_PASSWORD_B
-if [ ${ROOT_PASSWORD_A} == ${ROOT_PASSWORD_B} ]; then
-echo root:${ROOT_PASSWORD_B} | chpasswd &> $null
-    echo;
-    echo -e "${PSG} ${g}Root Password setting complete.[OK] ${h}"
-else    
-    echo -e "${PSR} ${r}Two passwords are inconsistent. ${h}"
-    exit 30;
+null="/dev/null"
+if [ ! -e /tmp/USERNAMES ]; then 
+        echo;
+        SETTINGS_ROOT_PA=$(echo -e "${PSY} ${g}Settings ${y}Root Password.${h}${JHG} ")
+        SETTINGS_ROOT_PB=$(echo -e "${PSY} ${g}Please enter the ${y}Root Password${h}${g} again.${h}${JHG} ")
+        SETTINGS_USERNAME=$(echo -e "${PSY} ${g}Settings UserName.${h}${JHG} ")
+        SETTINGS_USER_PASS=$(echo -e "${PSY} ${g}Settings Password.${h}${JHG} ")
+        read -p "${SETTINGS_ROOT_PA}" ROOT_PASSWORD_A
+        read -p "${SETTINGS_ROOT_PB}" ROOT_PASSWORD_B
+        if [ ${ROOT_PASSWORD_A} == ${ROOT_PASSWORD_B} ]; then
+        echo root:${ROOT_PASSWORD_B} | chpasswd &> $null
+            echo;
+            echo -e "${PSG} ${g}Root Password setting complete.[OK] ${h}"
+            echo "1" > /tmp/USERNAMES
+        else    
+            echo -e "${PSR} ${r}Two passwords are inconsistent.[X] ${h}"
+            exit 30;
+        fi
+        #---------------------------------------------------------------------------#
+        # 配置用户
+        #-----------------------------
+        echo;
+        read -p "${SETTINGS_USERNAME}" USER_NAME
+        read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_A
+        read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_B
+        if [ ${USER_PASSWORD_A} == ${USER_PASSWORD_B} ]; then
+            useradd -m -g users -G wheel -s /bin/zsh ${USER_NAME}
+            echo ${USER_NAME}:${USER_PASSWORD_B} | chpasswd &> $null
+            echo;
+            echo -e "${PSG} ${g}Password setting complete.[OK] ${h}"
+            echo "${USER_NAME}" > /tmp/USERNAMES
+            sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/install_zsh.sh)"
+        else    
+            echo -e "${PSR} ${r}${USER_NAME} Two passwords are inconsistent.[X] ${h}"
+            exit 31;
+        fi
+        #---------------------------------------------------------------------------#
+        # 更改sudo 配置
+        #-----------------------------
+        echo -e "${PSG} ${g}Configure Sudoers. ${h}"
+        function S_LINE() {
+            sed -n -e '/# %wheel ALL=(ALL) NOPASSWD: ALL/=' /etc/sudoers
+        }
+        SUDOERS_LIST=$(S_LINE)
+        chmod 770 /etc/sudoers
+            sed -i "${SUDOERS_LIST}i %wheel ALL=\(ALL\) NOPASSWD: ALL" /etc/sudoers || echo -e "${PSY} ${y}Configure Sudoers fail. ${h}"
+        chmod 440 /etc/sudoers   
+else
+    exit 0;
 fi
-#---------------------------------------------------------------------------#
-# 配置用户
-#-----------------------------
-echo;
-read -p "${SETTINGS_USERNAME}" USER_NAME
-read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_A
-read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_B
-if [ ${USER_PASSWORD_A} == ${USER_PASSWORD_B} ]; then
-    useradd -m -g users -G wheel -s /bin/zsh ${USER_NAME}
-    echo ${USER_NAME}:${USER_PASSWORD_B} | chpasswd &> $null
-    echo;
-    echo -e "${PSG} ${g}Password setting complete.[OK] ${h}"
-  else    
-    echo -e "${PSR} ${r}${USER_NAME} Two passwords are inconsistent. ${h}"
-    exit 31;
-fi
-#---------------------------------------------------------------------------#
-# 更改sudo 配置
-#-----------------------------
-echo -e "${PSG} ${g}Configure Sudoers. ${h}"
-function S_LINE() {
-    sed -n -e '/# %wheel ALL=(ALL) NOPASSWD: ALL/=' /etc/sudoers
-}
-SUDOERS_LIST=$(S_LINE)
-chmod 770 /etc/sudoers
-    sed -i "${SUDOERS_LIST}i %wheel ALL=\(ALL\) NOPASSWD: ALL" /etc/sudoers || echo -e "${PSY} ${y}Configure Sudoers fail. ${h}"
-chmod 440 /etc/sudoers
