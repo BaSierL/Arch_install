@@ -48,7 +48,8 @@ export ZSH=\"$ZSH\"
 	if [ -n "$SHELL" ]; then
 		echo $SHELL > ~/.shell.pre-oh-my-zsh
 	else
-		grep "^$USER:" /etc/passwd | awk -F: '{print $7}' > ~/.shell.pre-oh-my-zsh
+        USERNAMES_ID=$(cat /tmp/USERNAMES)
+		grep "^$USERNAMES_ID:" /etc/passwd | awk -F: '{print $7}' > ~/.shell.pre-oh-my-zsh
 	fi
 	if ! chsh -s "$zsh"; then
 		echo "  "
