@@ -114,7 +114,7 @@ read -p "${READS_A}" principal_variable
 
 PACMANCONF_FILE="/etc/pacman.conf"
 MIRRORLIST_FILE="/etc/pacman.d/mirrorlist"
-if [[ ${principal_variable} == 1 ]]; then
+if [[ ${principal_variable} = 1 ]]; then
     echo ;
     # 检查"/etc/pacman.d/mirrorlist"文件是否存在
     if [ -e ${MIRRORLIST_FILE}  ] ; then      
@@ -128,7 +128,7 @@ if [[ ${principal_variable} == 1 ]]; then
 fi
 
 #========检查网络  2
-if [[ ${principal_variable} == 2 ]]; then
+if [[ ${principal_variable} = 2 ]]; then
     echo;
     echo ":: Checking the currently available network."
     sleep 2
@@ -162,7 +162,7 @@ if [[ ${principal_variable} == 2 ]]; then
 fi
 #
 ##========开启SSH 3
-if [[ ${principal_variable} == 3 ]]; then
+if [[ ${principal_variable} = 3 ]]; then
     clear
     echo
     echo -e "${y}:: Setting Username / password.${h}"
@@ -312,7 +312,7 @@ if [[ ${principal_variable} == 4 ]];then
             cp -rf /etc/pacman.conf.bak /mnt/etc/pacman.conf 2&>${null}
             cp -rf /etc/pacman.d/mirrorlist.bak /mnt/etc/pacman.d/mirrorlist 2&>${null}
     fi
-# list3------------------------------------------------------------------------------------------------------#
+# list21------------------------------------------------------------------------------------------------------#
 #==========  Installation Drive. 驱动  ===========3333333333333
         if [[ ${tasks} == 21 ]];then
             #---------------------------------------------------------------------------#
@@ -321,32 +321,32 @@ if [[ ${principal_variable} == 4 ]];then
             sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh)" 
             echo;
             echo -e "${PSG} ${g}Installing Audio driver.${h}"
-            pacman -S alsa-utils pulseaudio pulseaudio-bluetooth pulseaudio-alsa  #安装声音软件包
+            pacman -Sy alsa-utils pulseaudio pulseaudio-bluetooth pulseaudio-alsa  #安装声音软件包
             echo "load-module module-bluetooth-policy" >> /etc/pulse/system.pa
             echo "load-module module-bluetooth-discover" >> /etc/pulse/system.pa
 
             echo -e "${PSG} ${g}Installing input driver.${h}"
-            pacman -S xf86-input-synaptics xf86-input-libinput create_ap     #触摸板驱动
+            pacman -Sy xf86-input-synaptics xf86-input-libinput create_ap     #触摸板驱动
             echo;
             READDISK_DRIVER_GPU=$(echo -e "${PSG} ${y}Please choose: Intel[1] AMD[2]${h} ${JHB} ")
             read -p "${READDISK_DRIVER_GPU}"  DRIVER_GPU_ID
-                if  [[ `echo "${DRIVER_GPU_ID}" | grep -E "^1$"`  == "1" ]] ; then
-                    pacman -S xf86-video-intel intel-ucode xf86-video-intel
-                elif [[ `echo "${DRIVER_GPU_ID}" | grep -E "^2$"`  == "2" ]] ; then
-                    pacman -S xf86-video-ati amd-ucode
+                if  [[ `echo "${DRIVER_GPU_ID}" | grep -E "^1$"`  = "1" ]] ; then
+                    pacman -Sy xf86-video-intel intel-ucode xf86-video-intel
+                elif [[ `echo "${DRIVER_GPU_ID}" | grep -E "^2$"`  = "2" ]] ; then
+                    pacman -Sy xf86-video-ati amd-ucode
                 fi
             lspci -k | grep -A 2 -E "(VGA|3D)"
             echo;
             READDISK_DRIVER_NVIDIA=$(echo -e "${PSG} ${y}Please choose: Nvidia[1] Exit[2]${h} ${JHB} ")
             read -p "${READDISK_DRIVER_NVIDIA}"  DRIVER_NVIDIA_ID
-                if  [[ `echo "${DRIVER_GPU_ID}" | grep -E "^1$"`  == "1" ]] ; then
-                    pacman -S nvidia nvidia-utils opencl-nvidia lib32-nvidia-utils lib32-opencl-nvidia mesa lib32-mesa-libgl  optimus-manager optimus-manager-qt 
+                if  [[ `echo "${DRIVER_GPU_ID}" | grep -E "^1$"`  = "1" ]] ; then
+                    pacman -Sy nvidia nvidia-utils opencl-nvidia lib32-nvidia-utils lib32-opencl-nvidia mesa lib32-mesa-libgl  optimus-manager optimus-manager-qt 
                     systemctl enable optimus-manager.service
                     rm -f /etc/X11/xorg.conf 2&> ${null}
                     rm -f /etc/X11/xorg.conf.d/90-mhwd.conf 2&> ${null}
 
                     if [ -e "/usr/bin/gdm" ] ; then  # gdm管理器
-                        pacman -S gdm-prime 
+                        pacman -Sy gdm-prime 
                         sed -i 's/#.*WaylandEnable=false/WaylandEnable=false/'  /etc/gdm/custom.conf
                     elif [ -e "/usr/bin/sddm" ] ; then
                         sed -i 's/DisplayCommand/# DisplayCommand/' /etc/sddm.conf
@@ -357,7 +357,7 @@ if [[ ${principal_variable} == 4 ]];then
                 fi      
         fi
 #------------------------------------------------------------------------------------------------------#
-# list4==========  Installation Desktop. 桌面环境 ==========444444444444444444444444444
+# list22==========  Installation Desktop. 桌面环境 ==========444444444444444444444444444
         if [[ ${tasks} == 22 ]];then
         sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh)" 
         DESKTOP_ID="0"
@@ -376,12 +376,12 @@ if [[ ${principal_variable} == 4 ]];then
                 DESKTOP_DESKTOP=$(tail -n 1 /etc/passwd | cut -d":" -f 1)
             else
                 #echo -e "${PSR} ${r}Error code [40] Please create a user first ! ${h}"
-                sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)"
+                sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)" 
                 sleep 3                  
             fi
             CHOICE_ITEM_DESKTOP=$(echo -e "${PSG} ${y} Please select desktop${h} ${JHB} ")
             read -p "${CHOICE_ITEM_DESKTOP}"  DESKTOP_ID
-                if  [[ `echo "${DESKTOP_ID}" | grep -E "^1$"`  == "1" ]] ; then
+                if  [[ `echo "${DESKTOP_ID}" | grep -E "^1$"`  = "1" ]] ; then
                     DESKTOP_ENVS="plasma"
                     pacman -S xorg xorg-server xorg-xinit mesa sddm sddm-kcm plasma plasma-desktop konsole dolphin kate \
                     plasma-pa xorg-xwininfo ttf-dejavu ttf-liberation  thunar gvfs gvfs-smb gnome-keyring neofetch \
@@ -390,39 +390,39 @@ if [[ ${principal_variable} == 4 ]];then
                         systemctl enable sddm
                         sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
                         echo "exec startkde" >> /etc/X11/xinit/xinitrc
-                        cp -rf /etc/X11/xinit/xinitrc  ${DESKTOP_DESKTOP}/.xinitrc
+                        cp -rf /etc/X11/xinit/xinitrc  /home/${DESKTOP_DESKTOP}/.xinitrc
                         echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
                     #-------------------------------------------------------------------------------# 
-                elif  [[ `echo "${DESKTOP_ID}" | grep -E "^2$"`  == "2" ]] ; then
+                elif  [[ `echo "${DESKTOP_ID}" | grep -E "^2$"`  = "2" ]] ; then
                     DESKTOP_ENVS="gnome"
-                    pacman -S xorg xorg-server xorg-xinit mesa gnome gnome-extra gdm gnome-shell gvfs-mtp neofetch \                 
+                    pacman -Sy xorg xorg-server xorg-xinit mesa gnome gnome-extra gdm gnome-shell gvfs-mtp neofetch \                 
                     gnome-tweaks gnome-shell-extensions unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp      
                         echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                         systemctl enable gdm
                         sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
                         echo "exec gnome=session" >> /etc/X11/xinit/xinitrc
-                        cp -rf /etc/X11/xinit/xinitrc  ${DESKTOP_DESKTOP}/.xinitrc
+                        cp -rf /etc/X11/xinit/xinitrc  /home/${DESKTOP_DESKTOP}/.xinitrc
                         echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
                     #-------------------------------------------------------------------------------#
-                elif  [[ `echo "${DESKTOP_ID}" | grep -E "^3$"`  == "3" ]] ; then
+                elif  [[ `echo "${DESKTOP_ID}" | grep -E "^3$"`  = "3" ]] ; then
                     DESKTOP_ENVS="deepin"
-                    pacman -S xorg xorg-server xorg-xinit mesa deepin deepin-extra lightdm neofetch \
+                    pacman -Sy xorg xorg-server xorg-xinit mesa deepin deepin-extra lightdm neofetch \
                     lightdm-deepin-greeter unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp                              
                         echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                         systemctl enable lightdm
                         sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
                         sed -i 's/greeter-session=example-gtk-gnome/greeter-session=lightdm-deepin-greeter/'  /etc/lightdm/lightdm.conf
                         echo "exec startdde" >> /etc/X11/xinit/xinitrc
-                        cp -rf /etc/X11/xinit/xinitrc  ${DESKTOP_DESKTOP}/.xinitrc
+                        cp -rf /etc/X11/xinit/xinitrc  /home/${DESKTOP_DESKTOP}/.xinitrc
                         echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
                     #-------------------------------------------------------------------------------#
-                #elif  [[ `echo "${DESKTOP_ID}" | grep -E "^4$"`  == "4" ]] ; then
+                #elif  [[ `echo "${DESKTOP_ID}" | grep -E "^4$"`  = "4" ]] ; then
                 #    DESKTOP_ENVS="xfce"
-                #    pacman -S xorg xorg-server xorg-xinit mesa xfce4 xfce4-goodies light-locker \
+                #    pacman -Sy xorg xorg-server xorg-xinit mesa xfce4 xfce4-goodies light-locker \
                 #    xfce4-power-manager libcanberra libcanberra-pulse unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp 
                 #    bash ${0} 
                     #-------------------------------------------------------------------------------#
-                #elif  [[ `echo "${DESKTOP_ID}" | grep -E "^5$"`  == "5" ]] ; then
+                #elif  [[ `echo "${DESKTOP_ID}" | grep -E "^5$"`  = "5" ]] ; then
                 #   echo "${PSY} ${y}Subsequent updates.....${h}"
                     #DESKTOP_ENVS="i3wm"   
                 #   bash ${0} 
@@ -435,17 +435,10 @@ if [[ ${principal_variable} == 4 ]];then
 # list5==========  进入系统后的配置 ===========55555555555555555555
 
     if [[ ${tasks} == 23 ]];then
-        if [ `tail -n 1 /etc/passwd | cut -d":" -f 3` -ge "1000" ] ; then
-            DESKTOP_DESKTOP=$(tail -n 1 /etc/passwd | cut -d":" -f 1)
-        else
-            #echo -e "${PSR} ${r}Error code [40] Please create a user first ! ${h}"
-            sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)"
-            sleep 3                  
-        fi
             sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh)" 
             echo;
             echo -e "${wg}Installing grub tools.${h}"  #安装grub工具
-                    pacman -S grub efibootmgr os-prober
+                    pacman -Sy grub efibootmgr os-prober
                     grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Archlinux   # 安装Grub引导
                     grub-mkconfig -o /boot/grub/grub.cfg                            # 生成配置文件
                     echo;
@@ -475,6 +468,15 @@ if [[ ${principal_variable} == 4 ]];then
                     # echo "LANG=zh_CN.UTF-8" > /etc/locale.conf       # 系统语言 "中文"
                     echo -e "${PSG} ${w}Install Fonts. ${h}"
                     pacman -Sy wqy-microhei wqy-zenhei ttf-dejavu ttf-ubuntu-font-family noto-fonts # 安装语言包
+        # 判断/etc/passwd文件中最后一个用户是否大于等于1000的普通用户，如果没有请先创建用户
+            if [ `tail -n 1 /etc/passwd | cut -d":" -f 3` -ge "1000" ] ; then
+                DESKTOP_DESKTOP=$(tail -n 1 /etc/passwd | cut -d":" -f 1)
+            else
+                #echo -e "${PSR} ${r}Error code [40] Please create a user first ! ${h}"
+                sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)" 
+                sleep 3                  
+            fi
+            
 
 echo -e "${ws}#======================================================#${h}" #本区块退出后的提示
 echo -e "${ws}#::                 Exit in 5/s                        #${h}"
