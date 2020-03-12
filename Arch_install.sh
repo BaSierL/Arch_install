@@ -371,23 +371,50 @@ if [[ ${principal_variable} == 4 ]];then
             #echo -e "${PSB} ${g}   i3wm.           ${h}${w}[5]${h}"
             echo "---------------------------------"                           
             echo;
+        # 判断/etc/passwd文件中最后一个用户是否大于等于1000的普通用户，如果没有请先创建用户
+            if [ `tail -n 1 /etc/passwd | cut -d":" -f 3` -ge "1000" ] ; then
+                DESKTOP_DESKTOP=$(tail -n 1 /etc/passwd | cut -d":" -f 1)
+            else
+                #echo -e "${PSR} ${r}Error code [40] Please create a user first ! ${h}"
+                sh -c "$(https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)"
+                sleep 3                  
+            fi
             CHOICE_ITEM_DESKTOP=$(echo -e "${PSG} ${y} Please select desktop${h} ${JHB} ")
             read -p "${CHOICE_ITEM_DESKTOP}"  DESKTOP_ID
                 if  [[ `echo "${DESKTOP_ID}" | grep -E "^1$"`  == "1" ]] ; then
                     DESKTOP_ENVS="plasma"
                     pacman -S xorg xorg-server xorg-xinit mesa sddm sddm-kcm plasma plasma-desktop konsole dolphin kate \
-                    plasma-pa xorg-xwininfo ttf-dejavu ttf-liberation  thunar gvfs gvfs-smb gnome-keyring \
+                    plasma-pa xorg-xwininfo ttf-dejavu ttf-liberation  thunar gvfs gvfs-smb gnome-keyring neofetch \
                     cifs-utils powerdevil unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp kio-extras 
+                        echo -e "${PSG} ${g}Configuring desktop environment.${h}"
+                        systemctl enable sddm
+                        sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
+                        echo "exec startkde" >> /etc/X11/xinit/xinitrc
+                        cp -rf /etc/X11/xinit/xinitrc  ${DESKTOP_DESKTOP}/.xinitrc
+                        echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
                     #-------------------------------------------------------------------------------# 
                 elif  [[ `echo "${DESKTOP_ID}" | grep -E "^2$"`  == "2" ]] ; then
                     DESKTOP_ENVS="gnome"
-                    pacman -S xorg xorg-server xorg-xinit mesa gnome gnome-extra gdm gnome-shell gvfs-mtp \                 
-                    gnome-tweaks gnome-shell-extensions unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp                         
+                    pacman -S xorg xorg-server xorg-xinit mesa gnome gnome-extra gdm gnome-shell gvfs-mtp neofetch \                 
+                    gnome-tweaks gnome-shell-extensions unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp      
+                        echo -e "${PSG} ${g}Configuring desktop environment.${h}"
+                        systemctl enable gdm
+                        sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
+                        echo "exec gnome=session" >> /etc/X11/xinit/xinitrc
+                        cp -rf /etc/X11/xinit/xinitrc  ${DESKTOP_DESKTOP}/.xinitrc
+                        echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
                     #-------------------------------------------------------------------------------#
                 elif  [[ `echo "${DESKTOP_ID}" | grep -E "^3$"`  == "3" ]] ; then
                     DESKTOP_ENVS="deepin"
-                    pacman -S xorg xorg-server xorg-xinit mesa deepin deepin-extra lightdm \
+                    pacman -S xorg xorg-server xorg-xinit mesa deepin deepin-extra lightdm neofetch \
                     lightdm-deepin-greeter unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp                              
+                        echo -e "${PSG} ${g}Configuring desktop environment.${h}"
+                        systemctl enable lightdm
+                        sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
+                        sed -i 's/greeter-session=example-gtk-gnome/greeter-session=lightdm-deepin-greeter/'  /etc/lightdm/lightdm.conf
+                        echo "exec startdde" >> /etc/X11/xinit/xinitrc
+                        cp -rf /etc/X11/xinit/xinitrc  ${DESKTOP_DESKTOP}/.xinitrc
+                        echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
                     #-------------------------------------------------------------------------------#
                 #elif  [[ `echo "${DESKTOP_ID}" | grep -E "^4$"`  == "4" ]] ; then
                 #    DESKTOP_ENVS="xfce"
@@ -407,8 +434,15 @@ if [[ ${principal_variable} == 4 ]];then
 #------------------------------------------------------------------------------------------------------#
 # list5==========  进入系统后的配置 ===========55555555555555555555
 
-        if [[ ${tasks} == 23 ]];then
-        sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh)" 
+    if [[ ${tasks} == 23 ]];then
+        if [ `tail -n 1 /etc/passwd | cut -d":" -f 3` -ge "1000" ] ; then
+            DESKTOP_DESKTOP=$(tail -n 1 /etc/passwd | cut -d":" -f 1)
+        else
+            #echo -e "${PSR} ${r}Error code [40] Please create a user first ! ${h}"
+            sh -c "$(https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)"
+            sleep 3                  
+        fi
+            sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh)" 
             echo;
             echo -e "${wg}Installing grub tools.${h}"  #安装grub工具
                     pacman -S grub efibootmgr os-prober
@@ -441,93 +475,22 @@ if [[ ${principal_variable} == 4 ]];then
                     # echo "LANG=zh_CN.UTF-8" > /etc/locale.conf       # 系统语言 "中文"
                     echo -e "${PSG} ${w}Install Fonts. ${h}"
                     pacman -Sy wqy-microhei wqy-zenhei ttf-dejavu ttf-ubuntu-font-family noto-fonts # 安装语言包
-            echo -e "${ws}#======================================================#${h}" #本区块退出后的提示
-            echo -e "${ws}#::  Execute in 5 seconds,About to set root password.  #${h}"
-            echo -e "${ws}#::  After configuration, you can restart the computer.#${h}"
-            echo -e "${ws}#::  If there is a problem during the installation     #${h}"
-            echo -e "${ws}#::  please contact me. QQ:2763833502                  #${h}"
-            echo -e "${ws}#======================================================#${h}"
-            sleep 5
-            #---------------------------------------------------------------------------#
-            # 配置用户 Root 密码  
-            #-----------------------------
-            echo;
-            SETTINGS_ROOT_PA=$(echo -e "${PSY} ${g}Settings ${y}Root Password.${h}${JHG} ")
-            SETTINGS_ROOT_PB=$(echo -e "${PSY} ${g}Please enter the ${y}Root Password${h}${g} again.${h}${JHG} ")
-            SETTINGS_USERNAME=$(echo -e "${PSY} ${g}Settings UserName.${h}${JHG} ")
-            SETTINGS_USER_PASS=$(echo -e "${PSY} ${g}Settings Password.${h}${JHG} ")
-            read -p "${SETTINGS_ROOT_PA}" ROOT_PASSWORD_A
-            read -p "${SETTINGS_ROOT_PB}" ROOT_PASSWORD_B
-            if [ ${ROOT_PASSWORD_A} == ${ROOT_PASSWORD_B} ]; then
-                echo root:${ROOT_PASSWORD_B} | chpasswd &> $null
-                echo;
-                echo -e "${PSG} ${g}Root Password setting complete.[OK] ${h}"
-            else    
-                echo -e "${PSR} ${r}Two passwords are inconsistent. ${h}"
-                exit 30;
-            fi
-            #---------------------------------------------------------------------------#
-            # 配置用户
-            #-----------------------------
-            echo;
-            read -p "${SETTINGS_USERNAME}" USER_NAME
-            read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_A
-            read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_B
-            if [ ${USER_PASSWORD_A} == ${USER_PASSWORD_B} ]; then
-                useradd -m -g users -G wheel -s /bin/bash ${USER_NAME}
-                echo ${USER_NAME}:${USER_PASSWORD_B} | chpasswd &> $null
-                echo;
-                echo -e "${PSG} ${g}Password setting complete.[OK] ${h}"
-            else    
-                echo -e "${PSR} ${r}${USER_NAME} Two passwords are inconsistent. ${h}"
-                exit 31;
-            fi
-            #---------------------------------------------------------------------------#
-            # 更改sudo 配置
-            #-----------------------------
-            echo -e "${PSG} ${g}Configure Sudoers. ${h}"
-            function S_LINE() {
-                sed -n -e '/# %wheel ALL=(ALL) NOPASSWD: ALL/=' /etc/sudoers
-            }
-            SUDOERS_LIST=$(S_LINE)
-            chmod 770 /etc/sudoers
-                sed -i "${SUDOERS_LIST}i %wheel ALL=\(ALL\) NOPASSWD: ALL" /etc/sudoers || echo -e "${PSY} ${y}Configure Sudoers fail. ${h}"
-            chmod 440 /etc/sudoers
-            #---------------------------------------------------------------------------#
-            #  配置桌面环境
-            #----------------------------- 
-            #   1.保存用户选择的变量，判断用户安装的什么桌面 优点：快速判断  缺点：必须的在脚本中完成一次桌面安装后，才知道用户是什么桌面。 保存变量为：${DESKTOP_ENVS}
-            #   2.首先制定每个桌面坏境配置  使用保存的变量，执行对应的配置命令  $DESKTOP_SESSION   env | grep DESKTOP_SESSION= 
+echo -e "${ws}#======================================================#${h}" #本区块退出后的提示
+echo -e "${ws}#::                 Exit in 5/s                        #${h}"
+echo -e "${ws}#::  When finished, restart the computer.              #${h}"
+echo -e "${ws}#::  If there is a problem during the installation     #${h}"
+echo -e "${ws}#::  please contact me. QQ:2763833502                  #${h}"
+echo -e "${ws}#======================================================#${h}"
+sleep 5
 
-            if [[ `echo "${DESKTOP_ENVS}"` == "plasma" ]] ; then  #------------ plasma
-            echo -e "${PSG} ${g}Configuring desktop environment.${h}"
-                systemctl enable sddm
-                echo "exec startkde" >> /etc/X11/xinit/xinitrc
-                cp -rf /etc/X11/xinit/xinitrc  $USER/.xinitrc
-            echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
-            elif [[ `echo "${DESKTOP_ENVS}"` == "gnome" ]] ; then  #------------ gnome
-            echo -e "${PSG} ${g}Configuring desktop environment.${h}"
-                systemctl enable gdm
-                echo "exec gnome=session" >> /etc/X11/xinit/xinitrc
-                cp -rf /etc/X11/xinit/xinitrc  $USER/.xinitrc
-            echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
-            elif [[ `echo "${DESKTOP_ENVS}"` == "deepin" ]] ; then  #------------ deepin
-            echo -e "${PSG} ${g}Configuring desktop environment.${h}"
-                systemctl enable lightdm
-                sed -i 's/greeter-session=example-gtk-gnome/greeter-session=lightdm-deepin-greeter/'  /etc/lightdm/lightdm.conf
-                echo "exec startdde" >> /etc/X11/xinit/xinitrc
-                cp -rf /etc/X11/xinit/xinitrc  $USER/.xinitrc
-            echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
-            fi
-        fi
-fi
 ##========退出 EXIT
+
 case $principal_variable in
     q | Q | quit | QUIT)
     clear;
     echo;
-    echo -e "${wg}#----------------------------------#${h}"
-    echo -e "${wg}#:: script is over. Thank.         #${h}"
-    echo -e "${wg}#----------------------------------#${h}"
+    echo -e "${wg}              #----------------------------------#${h}"
+    echo -e "${wg}              #------------Script Exit-----------#${h}"
+    echo -e "${wg}              #----------------------------------#${h}"
     exit 0
 esac
