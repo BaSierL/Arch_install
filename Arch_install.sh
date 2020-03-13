@@ -198,8 +198,8 @@ if [[ ${principal_variable} == 4 ]];then
     read -p "${READS_C}" tasks
 #
     if [[ ${tasks} == 0 ]];then
-    cat $0 > /mnt/Arch_install.sh  && chmod +x /mnt/Arch_install.sh
-    arch-chroot /mnt /bin/bash /Arch_install.sh
+    cat $0 > /mnt/$0  && chmod +x /mnt/$0
+    arch-chroot /mnt /bin/bash /$0
     fi
 # list1==========磁盘分区==========11111111111
     if [[ ${tasks} == 1 ]];then
@@ -307,8 +307,8 @@ if [[ ${principal_variable} == 4 ]];then
             cp -rf /etc/pacman.conf /mnt/etc/pacman.conf.bak 2&>${null}
             cp -rf /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist.bak 2&>${null}
 
-            cat $0 > /mnt/Arch_install.sh  && chmod +x /mnt/Arch_install.sh
-            arch-chroot /mnt /bin/bash /Arch_install.sh
+            cat $0 > /mnt/$0  && chmod +x /mnt/$0
+            arch-chroot /mnt /bin/bash /$0
             cp -rf /etc/pacman.conf.bak /mnt/etc/pacman.conf 2&>${null}
             cp -rf /etc/pacman.d/mirrorlist.bak /mnt/etc/pacman.d/mirrorlist 2&>${null}
     fi
@@ -326,7 +326,7 @@ if [[ ${principal_variable} == 4 ]];then
             echo "load-module module-bluetooth-discover" >> /etc/pulse/system.pa
 
             echo -e "${PSG} ${g}Installing input driver.${h}"
-            pacman -Sy xf86-input-synaptics xf86-input-libinput create_ap     #触摸板驱动
+            pacman -Sy xf86-input-synaptics xf86-input-libinput create_ap     #I/O驱动
             echo;
             READDISK_DRIVER_GPU=$(echo -e "${PSG} ${y}Please choose: Intel[1] AMD[2]${h} ${JHB} ")
             read -p "${READDISK_DRIVER_GPU}"  DRIVER_GPU_ID
@@ -395,8 +395,7 @@ if [[ ${principal_variable} == 4 ]];then
                     #-------------------------------------------------------------------------------# 
                 elif  [[ `echo "${DESKTOP_ID}" | grep -E "^2$"`  = "2" ]] ; then
                     DESKTOP_ENVS="gnome"
-                    pacman -Sy xorg xorg-server xorg-xinit mesa gnome gnome-extra gdm gnome-shell gvfs-mtp neofetch \                 
-                    gnome-tweaks gnome-shell-extensions unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp      
+                    pacman -Sy xorg xorg-server xorg-xinit mesa gnome gnome-extra gdm gnome-shell gvfs-mtp neofetch  gnome-tweaks gnome-shell-extensions unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp      
                         echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                         systemctl enable gdm
                         sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
