@@ -71,7 +71,7 @@ if [ ! -e /tmp/USERNAMES ]; then
         read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_A
         read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_B
         if [ ${USER_PASSWORD_A} == ${USER_PASSWORD_B} ]; then
-            useradd -m -g users -G wheel -s /bin/zsh ${USER_NAME}
+            useradd -m -g users -G wheel -s /bin/bash ${USER_NAME}
             echo ${USER_NAME}:${USER_PASSWORD_B} | chpasswd &> $null
             echo;
             echo -e "${PSG} ${g}Password setting complete.[OK] ${h}"
