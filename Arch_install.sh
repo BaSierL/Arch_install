@@ -9,6 +9,11 @@
 # 给予mirrorlist.sh执行权限，否则将我发导入源。
 
 null="/dev/null"
+#--------检查当前目录有没有mirrorlist.sh文件，没有就下一个
+if [ ! -e mirrorlist.sh ]; then
+    curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh  > mirrorlist.sh
+    chmod +x mirrorlist.sh
+fi
 
 #====脚本颜色变量-------------#
 r='\033[1;31m'	#---红
@@ -230,7 +235,7 @@ if [[ ${principal_variable} == 4 ]];then
                         mkfs.ext4 /dev/${DISK_NAMEL_B}
                         mount /dev/${DISK_NAMEL_B} /mnt
                         ls /sys/firmware/efi/efivars &> ${null} && mkdir -p /mnt/boot/efi || mkdir -p /mnt/boot
-                        cat /tmp/diskName_root > /diskName_root
+                        cat /tmp/diskName_root > /mnt/diskName_root
                     else
                         clear;
                         echo;
@@ -287,7 +292,7 @@ if [[ ${principal_variable} == 4 ]];then
                 pacstrap /mnt base base-devel linux linux-firmware linux-headers ntfs-3g networkmanager net-tools 
 	        sleep 2
             echo -e "${PSG}  ${r}Configure Fstab File.${h}" #配置Fstab文件
-	            genfstab -U /mnt >> /mnt/etc/fstab && cat /tmp/diskName_root > /diskName_root
+	            genfstab -U /mnt >> /mnt/etc/fstab && cat /tmp/diskName_root > /mnt/diskName_root
             clear;
             echo;
             echo;
@@ -434,10 +439,12 @@ if [[ ${principal_variable} == 4 ]];then
     if [[ ${tasks} == 23 ]];then
             sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh)" 
             echo;
-            echo -e "${wg}Installing grub tools.${h}"  #安装grub工具   UEFI与Boot传统模式判断方式：ls /sys/firmware/efi/efivars  Boot引导判断磁盘地址：cat /diskName_root
+            echo -e "${wg}Installing grub tools.${h}"  #安装grub工具   UEFI与Boot传统模式判断方式：ls /sys/firmware/efi/efivars  Boot引导判断磁盘地址：cat /mnt/diskName_root
                 if ls /sys/firmware/efi/efivars &> /dev/null ; then    # 判断文件是否存在，存在为真，执行EFI，否则执行 Boot
                     #-------------------------------------------------------------------------------#   
-                    echo -e "${PSG} ${w}Your startup mode has been detected as ${g}UEFI${h}."  
+                    echo;
+                    echo -e "${PSG} ${w}Your startup mode has been detected as ${g}UEFI${h}."
+                    echo;  
                     pacman -Sy grub efibootmgr os-prober
                     grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Archlinux   # 安装Grub引导
                     grub-mkconfig -o /boot/grub/grub.cfg                            # 生成配置文件
@@ -452,10 +459,12 @@ if [[ ${principal_variable} == 4 ]];then
                         echo; 
                     fi
                 else   #-------------------------------------------------------------------------------#
+                    echo;
                     echo -e "${PSG} ${w}Your startup mode has been detected as ${g}Boot Legacy${h}."
+                    echo;
                     pacman -Sy grub os-prober
                     Disk_Boot=$(cat /diskName_root)
-                    grub-install --target=i386-pc XXX   # 安装Grub引导
+                    grub-install --target=i386-pc ${Disk_Boot}   # 安装Grub引导
                     grub-mkconfig -o /boot/grub/grub.cfg                        # 生成配置文件
                     echo;
                     if echo $? &> ${null} ; then      #检验 并提示用户
@@ -466,7 +475,7 @@ if [[ ${principal_variable} == 4 ]];then
                             echo; 
                     fi
                         #-------------------------------------------------------------------------------#
-                if
+                fi
                 echo -e "${PSG} ${w}Configure enable Network.${h}"   
                 systemctl enable NetworkManager &> ${null}        #配置网络 加入开机启动
                 #---------------------------------------------------------------------------#
