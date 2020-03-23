@@ -9,10 +9,6 @@
 # 给予mirrorlist.sh执行权限，否则将我发导入源。
 
 null="/dev/null"
-#----------下载需要的脚本----------#
-if [ ! -e $PWD/mirrorlist.sh ]; then
-    curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh > mirrorlist.sh
-fi
 
 #====脚本颜色变量-------------#
 r='\033[1;31m'	#---红
@@ -52,7 +48,7 @@ PSG=$(echo -e "${g} ::==>${h}")
 PSY=$(echo -e "${y} ::==>${h}")
 #-----------------------------
 
-#========变量值
+#========变量
 
 clear;
 ECHOA=`echo -e "${w}    _             _       _     _                  ${h}"`  
@@ -198,8 +194,8 @@ if [[ ${principal_variable} == 4 ]];then
     read -p "${READS_C}" tasks
 #
     if [[ ${tasks} == 0 ]];then
-    cat $0 > /mnt/$0  && chmod +x /mnt/$0
-    arch-chroot /mnt /bin/bash /$0
+    cat $0 > /mnt/Arch_install.sh  && chmod +x /mnt/Arch_install.sh
+    arch-chroot /mnt /bin/bash /Arch_install.sh
     fi
 # list1==========磁盘分区==========11111111111
     if [[ ${tasks} == 1 ]];then
@@ -213,7 +209,7 @@ if [[ ${principal_variable} == 4 ]];then
             read -p "${READDISK_A}"  DISKS_ID  #给用户输入接口
                 DISK_NAMEL_A=$(echo "${DISKS_ID}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
                 if echo $DISK_NAMEL_A |  grep -E "^[a-z]" &> ${null} ; then
-                    cfdisk /dev/${DISK_NAMEL_A}  
+                    cfdisk /dev/${DISK_NAMEL_A}  && echo "/dev/${DISK_NAMEL_A}" > /tmp/diskName_root
                 else
                     clear;
                     echo;
@@ -234,6 +230,7 @@ if [[ ${principal_variable} == 4 ]];then
                         mkfs.ext4 /dev/${DISK_NAMEL_B}
                         mount /dev/${DISK_NAMEL_B} /mnt
                         ls /sys/firmware/efi/efivars &> ${null} && mkdir -p /mnt/boot/efi || mkdir -p /mnt/boot
+                        cat /tmp/diskName_root > /diskName_root
                     else
                         clear;
                         echo;
@@ -290,7 +287,7 @@ if [[ ${principal_variable} == 4 ]];then
                 pacstrap /mnt base base-devel linux linux-firmware linux-headers ntfs-3g networkmanager net-tools 
 	        sleep 2
             echo -e "${PSG}  ${r}Configure Fstab File.${h}" #配置Fstab文件
-	            genfstab -U /mnt >> /mnt/etc/fstab
+	            genfstab -U /mnt >> /mnt/etc/fstab && cat /tmp/diskName_root > /diskName_root
             clear;
             echo;
             echo;
@@ -307,8 +304,8 @@ if [[ ${principal_variable} == 4 ]];then
             cp -rf /etc/pacman.conf /mnt/etc/pacman.conf.bak 2&>${null}
             cp -rf /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist.bak 2&>${null}
 
-            cat $0 > /mnt/$0  && chmod +x /mnt/$0
-            arch-chroot /mnt /bin/bash /$0
+            cat $0 > /mnt/Arch_install.sh  && chmod +x /mnt/Arch_install.sh
+            arch-chroot /mnt /bin/bash /Arch_install.sh
             cp -rf /etc/pacman.conf.bak /mnt/etc/pacman.conf 2&>${null}
             cp -rf /etc/pacman.d/mirrorlist.bak /mnt/etc/pacman.d/mirrorlist 2&>${null}
     fi
@@ -326,7 +323,7 @@ if [[ ${principal_variable} == 4 ]];then
             echo "load-module module-bluetooth-discover" >> /etc/pulse/system.pa
 
             echo -e "${PSG} ${g}Installing input driver.${h}"
-            pacman -Sy xf86-input-synaptics xf86-input-libinput create_ap     #I/O驱动
+            pacman -Sy xf86-input-synaptics xf86-input-libinput create_ap     #触摸板驱动
             echo;
             READDISK_DRIVER_GPU=$(echo -e "${PSG} ${y}Please choose: Intel[1] AMD[2]${h} ${JHB} ")
             read -p "${READDISK_DRIVER_GPU}"  DRIVER_GPU_ID
@@ -395,7 +392,8 @@ if [[ ${principal_variable} == 4 ]];then
                     #-------------------------------------------------------------------------------# 
                 elif  [[ `echo "${DESKTOP_ID}" | grep -E "^2$"`  = "2" ]] ; then
                     DESKTOP_ENVS="gnome"
-                    pacman -Sy xorg xorg-server xorg-xinit mesa gnome gnome-extra gdm gnome-shell gvfs-mtp neofetch  gnome-tweaks gnome-shell-extensions unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp      
+                    pacman -Sy xorg xorg-server xorg-xinit mesa gnome gnome-extra gdm gnome-shell gvfs-mtp neofetch \                 
+                    gnome-tweaks gnome-shell-extensions unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp      
                         echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                         systemctl enable gdm
                         sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
@@ -436,7 +434,10 @@ if [[ ${principal_variable} == 4 ]];then
     if [[ ${tasks} == 23 ]];then
             sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh)" 
             echo;
-            echo -e "${wg}Installing grub tools.${h}"  #安装grub工具
+            echo -e "${wg}Installing grub tools.${h}"  #安装grub工具   UEFI与Boot传统模式判断方式：ls /sys/firmware/efi/efivars  Boot引导判断磁盘地址：cat /diskName_root
+                if ls /sys/firmware/efi/efivars &> /dev/null ; then    # 判断文件是否存在，存在为真，执行EFI，否则执行 Boot
+                    #-------------------------------------------------------------------------------#   
+                    echo -e "${PSG} ${w}Your startup mode has been detected as ${g}UEFI${h}."  
                     pacman -Sy grub efibootmgr os-prober
                     grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Archlinux   # 安装Grub引导
                     grub-mkconfig -o /boot/grub/grub.cfg                            # 生成配置文件
@@ -450,23 +451,39 @@ if [[ ${principal_variable} == 4 ]];then
                         echo -e "${g}     `efibootmgr`  ${h}"   
                         echo; 
                     fi
-                        echo -e "${PSG} ${w}Configure enable Network.${h}"   
-                    systemctl enable NetworkManager &> ${null}        #配置网络 加入开机启动
-                    #---------------------------------------------------------------------------#
-                    # 基础配置  时区 主机名 本地化 语言 安装语言包
-                    #-----------------------------
-                        echo -e "${PSG} ${w}Time zone changed to 'Shanghai'. ${h}"
-                    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && hwclock --systohc # 将时区更改为"上海" / 生成 /etc/adjtime
-                        echo -e "${PSG} ${w}Localization language settings. ${h}"
-                    echo "Archlinux" > /etc/hostname  # 设置主机名
-                    sed -i 's/#.*en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen # 本地化设置 "英文"
-                    sed -i 's/#.*zh_CN.UTF-8 UTF-8/zh_CN.UTF-8 UTF-8/' /etc/locale.gen # 本地化设置 "中文"
-                    locale-gen       # 生成 locale
-                    echo -e "${PSG} ${w}Configure local language defaults 'en_US.UTF-8'. ${h}"
-                    echo "LANG=en_US.UTF-8" > /etc/locale.conf       # 系统语言 "英文" 默认为英文   
-                    # echo "LANG=zh_CN.UTF-8" > /etc/locale.conf       # 系统语言 "中文"
-                    echo -e "${PSG} ${w}Install Fonts. ${h}"
-                    pacman -Sy wqy-microhei wqy-zenhei ttf-dejavu ttf-ubuntu-font-family noto-fonts # 安装语言包
+                else   #-------------------------------------------------------------------------------#
+                    echo -e "${PSG} ${w}Your startup mode has been detected as ${g}Boot Legacy${h}."
+                    pacman -Sy grub os-prober
+                    Disk_Boot=$(cat /diskName_root)
+                    grub-install --target=i386-pc XXX   # 安装Grub引导
+                    grub-mkconfig -o /boot/grub/grub.cfg                        # 生成配置文件
+                    echo;
+                    if echo $? &> ${null} ; then      #检验 并提示用户
+                            echo -e "${g} Grub installed successfully -=> [Archlinux] ${h}"
+                            echo;   
+                    else
+                            echo -e "${r} Grub installed failed ${h}"       # 如果安装失败，提示用户，并列出引导列表
+                            echo; 
+                    fi
+                        #-------------------------------------------------------------------------------#
+                if
+                echo -e "${PSG} ${w}Configure enable Network.${h}"   
+                systemctl enable NetworkManager &> ${null}        #配置网络 加入开机启动
+                #---------------------------------------------------------------------------#
+                # 基础配置  时区 主机名 本地化 语言 安装语言包
+                #-----------------------------
+                    echo -e "${PSG} ${w}Time zone changed to 'Shanghai'. ${h}"
+                ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && hwclock --systohc # 将时区更改为"上海" / 生成 /etc/adjtime
+                    echo -e "${PSG} ${w}Localization language settings. ${h}"
+                echo "Archlinux" > /etc/hostname  # 设置主机名
+                sed -i 's/#.*en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen # 本地化设置 "英文"
+                sed -i 's/#.*zh_CN.UTF-8 UTF-8/zh_CN.UTF-8 UTF-8/' /etc/locale.gen # 本地化设置 "中文"
+                locale-gen       # 生成 locale
+                echo -e "${PSG} ${w}Configure local language defaults 'en_US.UTF-8'. ${h}"
+                echo "LANG=en_US.UTF-8" > /etc/locale.conf       # 系统语言 "英文" 默认为英文   
+                # echo "LANG=zh_CN.UTF-8" > /etc/locale.conf       # 系统语言 "中文"
+                echo -e "${PSG} ${w}Install Fonts. ${h}"
+                pacman -Sy wqy-microhei wqy-zenhei ttf-dejavu ttf-ubuntu-font-family noto-fonts # 安装语言包
         # 判断/etc/passwd文件中最后一个用户是否大于等于1000的普通用户，如果没有请先创建用户
             if [ `tail -n 1 /etc/passwd | cut -d":" -f 3` -ge "1000" ] ; then
                 DESKTOP_DESKTOP=$(tail -n 1 /etc/passwd | cut -d":" -f 1)
