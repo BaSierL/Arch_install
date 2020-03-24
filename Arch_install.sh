@@ -13,7 +13,7 @@ null="/dev/null"
 if [ ! -e mirrorlist.sh ]; then
     curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh  > mirrorlist.sh
     chmod +x mirrorlist.sh
-fi
+fi 
 
 #====脚本颜色变量-------------#
 r='\033[1;31m'	#---红
@@ -52,6 +52,15 @@ PSG=$(echo -e "${g} ::==>${h}")
 # 提示 黄
 PSY=$(echo -e "${y} ::==>${h}")
 #-----------------------------
+
+#========判断当前模式
+#------因暂时还不知道怎么得知当前是否为Chroot模式，所以必须使用脚本分区后，才知道处于什么模式！
+#------如果是以自行分区，也可以手动在 新系统根目录创建/mnt/diskName_root文件，文件上级目录必须为 /mnt
+if [ -e /diskName_root ];then
+    ChrootPattern=$(echo -e "${g}Chroot-ON${h}")
+else
+    ChrootPattern=$(echo -e "${r}Chroot-OFF${h}")
+fi
 
 #========变量
 
@@ -92,13 +101,14 @@ WIFI_IP=`ip route | grep ${WIFI} &> ${null} && ip route list | grep ${WIFI} |  c
 
 #========选项
 echo -e "${b}||====================================================================||${h}"
-echo -e "${b}|| Script Name:        Arch Linux system installation script.        ${h}"  
-echo -e "${b}|| Author:             Auroot                                        ${h}"
-echo -e "${b}|| GitHub:	       ${bx}https://github.com/BaSierL/arch_install${h}        ${h}"
-echo -e "${g}|| Ethernet:           ${ETHERNET_IP:-No_network..}                                  ${h}"
-echo -e "${g}|| WIFI:	       ${WIFI_IP:-No_network.}                                   ${h}"
-echo -e "${g}|| SSH:                ssh $USER@${ETHERNET_IP:-IP_Addess.}                         ${h}"
-echo -e "${g}|| SSH:                ssh $USER@${WIFI_IP:-IP_Addess.}                         ${h}"
+echo -e "${b}|| Script Name:        Arch Linux system installation script.           ${h}"  
+echo -e "${b}|| Author:             Auroot                                           ${h}"
+echo -e "${b}|| GitHub:	       ${bx}https://gitee.com/auroot/Arch_install${h}        ${h}"  
+echo -e "${g}|| Pattern:            ${ChrootPattern}                                 ${h}"
+echo -e "${g}|| Ethernet:           ${ETHERNET_IP:-No_network..}                     ${h}"
+echo -e "${g}|| WIFI:	       ${WIFI_IP:-No_network.}                               ${h}"
+echo -e "${g}|| SSH:                ssh $USER@${ETHERNET_IP:-IP_Addess.}             ${h}"
+echo -e "${g}|| SSH:                ssh $USER@${WIFI_IP:-IP_Addess.}                 ${h}"
 echo -e "${g}||====================================================================||${h}"
 echo;
 echo -e "${PSB} ${g}Configure Mirrorlist   [1]${h}"
@@ -289,10 +299,14 @@ if [[ ${principal_variable} == 4 ]];then
             echo;
             echo -e "${PSG} ${g}Install the base packages.${h}"   #安装基本系统
             echo;
-                pacstrap /mnt base base-devel linux linux-firmware linux-headers ntfs-3g networkmanager net-tools 
-	        sleep 2
-            echo -e "${PSG}  ${r}Configure Fstab File.${h}" #配置Fstab文件
+                pacstrap /mnt base base-devel linux  # 第一部分
+                pacstrap /mnt linux-firmware linux-headers ntfs-3g networkmanager net-tools     # 第二部分 分开安装，避免可不必要的错误！
+            echo;
+	        sleep 3
+            echo -e "${PSG}  ${g}Configure Fstab File.${h}" #配置Fstab文件
 	            genfstab -U /mnt >> /mnt/etc/fstab && cat /tmp/diskName_root > /mnt/diskName_root
+                echo;
+            sleep 2
             clear;
             echo;
             echo;
@@ -519,8 +533,8 @@ case $principal_variable in
     q | Q | quit | QUIT)
     clear;
     echo;
-    echo -e "${wg}              #----------------------------------#${h}"
-    echo -e "${wg}              #------------Script Exit-----------#${h}"
-    echo -e "${wg}              #----------------------------------#${h}"
+    echo -e "${wg}#----------------------------------#${h}"
+    echo -e "${wg}#------------Script Exit-----------#${h}"
+    echo -e "${wg}#----------------------------------#${h}"
     exit 0
 esac
