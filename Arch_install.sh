@@ -245,6 +245,7 @@ if [[ ${principal_variable} == 4 ]];then
                         mkfs.ext4 /dev/${DISK_NAMEL_B}
                         mount /dev/${DISK_NAMEL_B} /mnt
                         ls /sys/firmware/efi/efivars &> ${null} && mkdir -p /mnt/boot/efi || mkdir -p /mnt/boot
+                        mkdir /mnt/Archin 2&> /dev/null 
                         cat /tmp/diskName_root > /mnt/diskName_root
                     else
                         clear;
@@ -322,6 +323,7 @@ if [[ ${principal_variable} == 4 ]];then
             rm -rf /mnt/etc/pacman.d/mirrorlist 2&>${null}
             cp -rf /etc/pacman.conf /mnt/etc/pacman.conf.bak 2&>${null}
             cp -rf /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist.bak 2&>${null}
+            mkdir /mnt/Archin 2&> /dev/null
 
             cat $0 > /mnt/Arch_install.sh  && chmod +x /mnt/Arch_install.sh
             arch-chroot /mnt /bin/bash /Arch_install.sh
@@ -387,14 +389,39 @@ if [[ ${principal_variable} == 4 ]];then
             #echo -e "${PSB} ${g}   i3wm.           ${h}${w}[5]${h}"
             echo "---------------------------------"                           
             echo;
-        # 判断/etc/passwd文件中最后一个用户是否大于等于1000的普通用户，如果没有请先创建用户
-            if [ `tail -n 1 /etc/passwd | cut -d":" -f 3` -ge "1000" ] ; then
-                DESKTOP_DESKTOP=$(tail -n 1 /etc/passwd | cut -d":" -f 1)
+                        #---------------------------------------------------------------------------#
+            # 设置root密码 用户  判断/etc/passwd文件中最后一个用户是否大于等于1000的普通用户，如果没有请先创建用户
+            #-----------------------------
+            PasswdFile="/etc/passwd"
+            if [ -e /Archin/UserName ]; then   #  设定一个文件匹配，这个文件在不在都无所谓
+                for ((Number=1;Number<=50;Number++))  # 设置变量Number 等于1 ；小于等于50 ； Number 1+1直到50
+                do
+                Query=$(tail -n ${Number} ${PasswdFile} | head -n 1 | cut -d":" -f3)
+                    for Contrast in {1000..1100}
+                    do
+                        if [[ $Query == $Contrast ]]; then
+                            CheckingUsers=$(cat ${PasswdFile} | grep "$Query" | cut -d":" -f1)
+                            CheckingID=$(cat ${PasswdFile} | grep "$Query" | cut -d":" -f3)
+                            #echo "A normal user already exists, The UserName: $CheckingUsers ID: $CheckingID."
+                            #echo "$Query" > /tmp/Query
+                            #DESKTOP_USERNAME=$(tail -n 1 ~/shu | cut -d" " -f1 )
+                            #echo "$DESKTOP_USERNAME"
+                            #rm -rf /tmp/Query
+                        #else
+                        fi
+                    done 
+                done
+                echo "$CheckingUsers" > /Archin/UserName  
+                CheckingUsers=$(cat /Archin/UserName)
+                echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h} ${g}ID: ${b}${CheckingID}${h}."
             else
-                #echo -e "${PSR} ${r}Error code [40] Please create a user first ! ${h}"
-                sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)" 
-                sleep 3                  
+                sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)"
+                CheckingUsers=$(cat /Archin/UserName)
+                echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h}."
             fi
+            #---------------------------------------------------------------------------#
+            # 开始安装桌面环境
+            #-----------------------------
             CHOICE_ITEM_DESKTOP=$(echo -e "${PSG} ${y} Please select desktop${h} ${JHB} ")
             read -p "${CHOICE_ITEM_DESKTOP}"  DESKTOP_ID
                 if  [[ `echo "${DESKTOP_ID}" | grep -E "^1$"`  = "1" ]] ; then
@@ -406,7 +433,7 @@ if [[ ${principal_variable} == 4 ]];then
                         systemctl enable sddm
                         sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
                         echo "exec startkde" >> /etc/X11/xinit/xinitrc
-                        cp -rf /etc/X11/xinit/xinitrc  /home/${DESKTOP_DESKTOP}/.xinitrc
+                        cp -rf /etc/X11/xinit/xinitrc  /home/${CheckingUser}/.xinitrc
                         echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
                     #-------------------------------------------------------------------------------# 
                 elif  [[ `echo "${DESKTOP_ID}" | grep -E "^2$"`  = "2" ]] ; then
@@ -417,7 +444,7 @@ if [[ ${principal_variable} == 4 ]];then
                         systemctl enable gdm
                         sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
                         echo "exec gnome=session" >> /etc/X11/xinit/xinitrc
-                        cp -rf /etc/X11/xinit/xinitrc  /home/${DESKTOP_DESKTOP}/.xinitrc
+                        cp -rf /etc/X11/xinit/xinitrc  /home/${CheckingUser}/.xinitrc
                         echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
                     #-------------------------------------------------------------------------------#
                 elif  [[ `echo "${DESKTOP_ID}" | grep -E "^3$"`  = "3" ]] ; then
@@ -429,7 +456,7 @@ if [[ ${principal_variable} == 4 ]];then
                         sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
                         sed -i 's/greeter-session=example-gtk-gnome/greeter-session=lightdm-deepin-greeter/'  /etc/lightdm/lightdm.conf
                         echo "exec startdde" >> /etc/X11/xinit/xinitrc
-                        cp -rf /etc/X11/xinit/xinitrc  /home/${DESKTOP_DESKTOP}/.xinitrc
+                        cp -rf /etc/X11/xinit/xinitrc  /home/${CheckingUser}/.xinitrc
                         echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
                     #-------------------------------------------------------------------------------#
                 #elif  [[ `echo "${DESKTOP_ID}" | grep -E "^4$"`  = "4" ]] ; then
@@ -507,16 +534,37 @@ if [[ ${principal_variable} == 4 ]];then
                 # echo "LANG=zh_CN.UTF-8" > /etc/locale.conf       # 系统语言 "中文"
                 echo -e "${PSG} ${w}Install Fonts. ${h}"
                 pacman -Sy wqy-microhei wqy-zenhei ttf-dejavu ttf-ubuntu-font-family noto-fonts # 安装语言包
-        # 判断/etc/passwd文件中最后一个用户是否大于等于1000的普通用户，如果没有请先创建用户
-            if [ `tail -n 1 /etc/passwd | cut -d":" -f 3` -ge "1000" ] ; then
-                DESKTOP_DESKTOP=$(tail -n 1 /etc/passwd | cut -d":" -f 1)
+                #---------------------------------------------------------------------------#
+                # 设置root密码 用户  判断/etc/passwd文件中最后一个用户是否大于等于1000的普通用户，如果没有请先创建用户
+                #-----------------------------
+            PasswdFile="/etc/passwd"
+            if [ -e /Archin/UserName ]; then   # /tmp/QueryUser 设定一个文件匹配，这个文件在不在都无所谓
+                for ((Number=1;Number<=50;Number++))  # 设置变量Number 等于1 ；小于等于50 ； Number 1+1直到50
+                do
+                Query=$(tail -n ${Number} ${PasswdFile} | head -n 1 | cut -d":" -f3)
+                    for Contrast in {1000..1100}
+                    do
+                        if [[ $Query == $Contrast ]]; then
+                            CheckingUsers=$(cat ${PasswdFile} | grep "$Query" | cut -d":" -f1)
+                            CheckingID=$(cat ${PasswdFile} | grep "$Query" | cut -d":" -f3)
+                            #echo "A normal user already exists, The UserName: $CheckingUsers ID: $CheckingID."
+                            #echo "$Query" > /tmp/Query
+                            #DESKTOP_USERNAME=$(tail -n 1 ~/shu | cut -d" " -f1 )
+                            #echo "$DESKTOP_USERNAME"
+                            #rm -rf /tmp/Query
+                        #else
+                        fi
+                    done 
+                done
+                echo "$CheckingUsers" > /Archin/UserName  
+                CheckingUsers=$(cat /Archin/UserName)
+                echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h} ${g}ID:${h} ${b}${CheckingID}${h}."
             else
-                #echo -e "${PSR} ${r}Error code [40] Please create a user first ! ${h}"
-                sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)" 
-                sleep 3                  
+                sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)"
+                CheckingUsers=$(cat /Archin/UserName)
+                echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h}."
             fi
-            
-
+    else 
 echo -e "${ws}#======================================================#${h}" #本区块退出后的提示
 echo -e "${ws}#::                 Exit in 5/s                        #${h}"
 echo -e "${ws}#::  When finished, restart the computer.              #${h}"
