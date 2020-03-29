@@ -6,15 +6,6 @@
 # URL GitHub： https://github.com/BaSierL/arch_install.git
 # URL Gitee ： https://gitee.com/auroot/arch_install.git
 
-# 给予mirrorlist.sh执行权限，否则将我发导入源。
-
-null="/dev/null"
-#--------检查当前目录有没有mirrorlist.sh文件，没有就下一个
-if [ ! -e mirrorlist.sh ]; then
-    curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh  > mirrorlist.sh
-    chmod +x mirrorlist.sh
-fi 
-
 #====脚本颜色变量-------------#
 r='\033[1;31m'	#---红
 g='\033[1;32m'	#---绿
@@ -52,7 +43,13 @@ PSG=$(echo -e "${g} ::==>${h}")
 # 提示 黄
 PSY=$(echo -e "${y} ::==>${h}")
 #-----------------------------
-
+# 给予mirrorlist.sh执行权限，否则将我发导入源。
+#--------检查当前目录有没有mirrorlist.sh文件，没有就下一个 
+if [ ! -e mirrorlist.sh ]; then
+    curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh  > mirrorlist.sh
+    chmod +x mirrorlist.sh
+fi 
+null="/dev/null"
 #========判断当前模式
 #------因暂时还不知道怎么得知当前是否为Chroot模式，所以必须使用脚本分区后，才知道处于什么模式！
 #------如果是以自行分区，也可以手动在 新系统根目录创建/mnt/diskName_root文件，文件上级目录必须为 /mnt
@@ -63,13 +60,13 @@ else
 fi
 
 #========变量
-
+#------ArchLinux
 clear;
-ECHOA=`echo -e "${w}    _             _       _     _                  ${h}"`  
-ECHOB=`echo -e "${g}   / \   _ __ ___| |__   | |   (_)_ __  _   ___  _        ${h}"` 
-ECHOC=`echo -e "${b}  / _ \ | '__/ __| '_ \  | |   | | '_ \| | | \ \/ /         ${h}"` 
-ECHOD=`echo -e "${y} / ___ \| | | (__| | | | | |___| | | | | |_| |>  <           ${h}"`  
-ECHOE=`echo -e "${r}/_/   \_\_|  \___|_| |_| |_____|_|_| |_|\__,_/_/\_\                ${h}"`
+ECHOA=$(echo -e "${w}    _             _       _     _                    ${h}") 
+ECHOB=$(echo -e "${g}   / \   _ __ ___| |__   | |   (_)_ __  _   ___  _   ${h}")
+ECHOC=$(echo -e "${b}  / _ \ | '__/ __| '_ \  | |   | | '_ \| | | \ \/ /  ${h}")
+ECHOD=$(echo -e "${y} / ___ \| | | (__| | | | | |___| | | | | |_| |>  <   ${h}")
+ECHOE=$(echo -e "${r}/_/   \_\_|  \___|_| |_| |_____|_|_| |_|\__,_/_/\_\  ${h}")
 echo -e "$ECHOA\n$ECHOB\n$ECHOC\n$ECHOD\n$ECHOE" | lolcat 2> ${null} || echo -e "$ECHOA\n$ECHOB\n$ECHOC\n$ECHOD\n$ECHOE"
 
 # 文件位置变量
@@ -84,7 +81,6 @@ LIST_IN="$PWD/$0"
 PASS="123456"
 #systemctl start dhcpcd &> ${null}
 
-
 #========网络变量
 #有线
 ETHERNET=`ip link | grep 'enp[0-9]s[0-9]' |  grep -v 'grep' | awk '{print $2}' | cut -d":" -f1`  
@@ -97,19 +93,18 @@ WIFI=`ip link | grep 'wlp[0-9]s[0-9]' | grep -v 'grep' | awk '{print $2}' | cut 
 ETHERNET_IP=`ip route | grep "${ETHERNET}" &> ${null} && ip route list | grep "${ETHERNET}" | cut -d" " -f9 | sed -n '2,1p'`  
 WIFI_IP=`ip route | grep ${WIFI} &> ${null} && ip route list | grep ${WIFI} |  cut -d" " -f9 | sed -n '2,1p'`
 
-
-
 #========选项
-echo -e "${b}||====================================================================||${h}"
-echo -e "${b}|| Script Name:        Arch Linux system installation script.           ${h}"  
-echo -e "${b}|| Author:             Auroot                                           ${h}"
-echo -e "${b}|| GitHub:	       ${bx}https://gitee.com/auroot/Arch_install${h}        ${h}"  
-echo -e "${g}|| Pattern:            ${ChrootPattern}                                 ${h}"
-echo -e "${g}|| Ethernet:           ${ETHERNET_IP:-No_network..}                     ${h}"
-echo -e "${g}|| WIFI:	       ${WIFI_IP:-No_network.}                               ${h}"
-echo -e "${g}|| SSH:                ssh $USER@${ETHERNET_IP:-IP_Addess.}             ${h}"
-echo -e "${g}|| SSH:                ssh $USER@${WIFI_IP:-IP_Addess.}                 ${h}"
-echo -e "${g}||====================================================================||${h}"
+Tips1=$(echo -e "${b}||====================================================================||${h}")
+Tips2=$(echo -e "${b}|| Script Name:        Arch Linux system installation script.           ${h}") 
+Tips3=$(echo -e "${b}|| Author:             Auroot                                           ${h}")
+Tips4=$(echo -e "${b}|| GitHub:	       ${bx}https://gitee.com/auroot/Arch_install${h}        ${h}")  
+Tips5=$(echo -e "${g}|| Pattern:            ${ChrootPattern}                                 ${h}")
+Tips6=$(echo -e "${g}|| Ethernet:           ${ETHERNET_IP:-No_network..}                     ${h}")
+Tips7=$(echo -e "${g}|| WIFI:	       ${WIFI_IP:-No_network.}                               ${h}")
+Tips8=$(echo -e "${g}|| SSH:                ssh $USER@${ETHERNET_IP:-IP_Addess.}             ${h}")
+Tips9=$(echo -e "${g}|| SSH:                ssh $USER@${WIFI_IP:-IP_Addess.}                 ${h}")
+Tips0=$(echo -e "${g}||====================================================================||${h}")
+echo -e "$Tips1\n$Tips2\n$Tips3\n$Tips4\n$Tips5\n$Tips6\n$Tips7\n$Tips8\n$Tips9\n$Tips0" | lolcat 2> ${null} || echo -e "$Tips1\n$Tips2\n$Tips3\n$Tips4\n$Tips5\n$Tips6\n$Tips7\n$Tips8\n$Tips9\n$Tips0"
 echo;
 echo -e "${PSB} ${g}Configure Mirrorlist   [1]${h}"
 echo -e "${PSB} ${g}Configure Network      [2]${h}"
@@ -301,7 +296,7 @@ if [[ ${principal_variable} == 4 ]];then
             echo -e "${PSG} ${g}Install the base packages.${h}"   #安装基本系统
             echo;
                 pacstrap /mnt base base-devel linux  # 第一部分
-                pacstrap /mnt linux-firmware linux-headers ntfs-3g networkmanager net-tools     # 第二部分 分开安装，避免可不必要的错误！
+                pacstrap /mnt linux-firmware linux-headers ntfs-3g networkmanager net-tools dhcpcd vim   # 第二部分 分开安装，避免可不必要的错误！
             echo;
 	        sleep 3
             echo -e "${PSG}  ${g}Configure Fstab File.${h}" #配置Fstab文件
@@ -382,11 +377,11 @@ if [[ ${principal_variable} == 4 ]];then
             echo
             echo -e "     ${w}***${h} ${b}Install Desktop${h} ${w}***${h}  "
             echo "---------------------------------"
-            echo -e "${PSB} ${g}   KDE plasma.     ${h}${w}[1]${h}"
-            echo -e "${PSB} ${g}   Gnome.          ${h}${w}[2]${h}"
-            echo -e "${PSB} ${g}   Deepin.         ${h}${w}[3]${h}"    
-            #echo -e "${PSB} ${g}   xfce.           ${h}${w}[4]${h}"  
-            #echo -e "${PSB} ${g}   i3wm.           ${h}${w}[5]${h}"
+            echo -e "${PSB} ${g}   KDE plasma.     ${h}${w}[1]${h}  --sddm"
+            echo -e "${PSB} ${g}   Gnome.          ${h}${w}[2]${h}  --gdm"
+            echo -e "${PSB} ${g}   Deepin.         ${h}${w}[3]${h}  --lightdm"    
+            echo -e "${PSB} ${g}   xfce.           ${h}${w}[4]${h}  --sddm"  
+            echo -e "${PSB} ${g}   i3wm.           ${h}${w}[5]${h}  --sddm"
             echo "---------------------------------"                           
             echo;
                         #---------------------------------------------------------------------------#
@@ -426,7 +421,7 @@ if [[ ${principal_variable} == 4 ]];then
             read -p "${CHOICE_ITEM_DESKTOP}"  DESKTOP_ID
                 if  [[ `echo "${DESKTOP_ID}" | grep -E "^1$"`  = "1" ]] ; then
                     DESKTOP_ENVS="plasma"
-                    pacman -S xorg xorg-server xorg-xinit mesa sddm sddm-kcm plasma plasma-desktop konsole dolphin kate \
+                    pacman -S xorg xorg-server xorg-xinit mesa sddm sddm-kcm plasma plasma-desktop konsole dolphin kde-l10n-zh_cn kate \
                     plasma-pa xorg-xwininfo ttf-dejavu ttf-liberation  thunar gvfs gvfs-smb gnome-keyring neofetch \
                     cifs-utils powerdevil unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp kio-extras 
                         echo -e "${PSG} ${g}Configuring desktop environment.${h}"
@@ -459,21 +454,30 @@ if [[ ${principal_variable} == 4 ]];then
                         cp -rf /etc/X11/xinit/xinitrc  /home/${CheckingUser}/.xinitrc
                         echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
                     #-------------------------------------------------------------------------------#
-                #elif  [[ `echo "${DESKTOP_ID}" | grep -E "^4$"`  = "4" ]] ; then
-                #    DESKTOP_ENVS="xfce"
-                #    pacman -Sy xorg xorg-server xorg-xinit mesa xfce4 xfce4-goodies light-locker \
-                #    xfce4-power-manager libcanberra libcanberra-pulse unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp 
-                #    bash ${0} 
+                elif  [[ `echo "${DESKTOP_ID}" | grep -E "^4$"`  = "4" ]] ; then
+                    DESKTOP_ENVS="xfce"
+                    pacman -Sy xorg xorg-server xorg-xinit mesa xfce4 xfce4-goodies sddm light-locker xfce4-power-manager \
+                    libcanberra libcanberra-pulse neofetch unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp 
+                        echo -e "${PSG} ${g}Configuring desktop environment.${h}"
+                        systemctl enable sddm
+                        sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
+                        echo "exec startxfce4" >> /etc/X11/xinit/xinitrc
+                        cp -rf /etc/X11/xinit/xinitrc  /home/${CheckingUser}/.xinitrc
+                        echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
                     #-------------------------------------------------------------------------------#
-                #elif  [[ `echo "${DESKTOP_ID}" | grep -E "^5$"`  = "5" ]] ; then
-                #   echo "${PSY} ${y}Subsequent updates.....${h}"
-                    #DESKTOP_ENVS="i3wm"   
-                #   bash ${0} 
+                elif  [[ `echo "${DESKTOP_ID}" | grep -E "^5$"`  = "5" ]] ; then
+                    DESKTOP_ENVS="i3wm"  
+                    pacman -Sy i3 i3-gaps i3lock i3status compton dmenu feh picom nautilus polybar gvfs-mtp sddm \
+                    neofetch unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp 
+                    echo -e "${PSG} ${g}Configuring desktop environment.${h}"
+                    systemctl enable sddm
+                    sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
+                    echo "exec i3" >> /etc/X11/xinit/xinitrc
+                    cp -rf /etc/X11/xinit/xinitrc  /home/${CheckingUser}/.xinitrc
+                    echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
                     #-------------------------------------------------------------------------------#    
                 fi
         fi
-#------------------------------------------------------------------------------------------------------#
-
 #------------------------------------------------------------------------------------------------------#
 # list5==========  进入系统后的配置 ===========55555555555555555555
 
@@ -518,7 +522,8 @@ if [[ ${principal_variable} == 4 ]];then
                         #-------------------------------------------------------------------------------#
                 fi
                 echo -e "${PSG} ${w}Configure enable Network.${h}"   
-                systemctl enable NetworkManager &> ${null}        #配置网络 加入开机启动
+                systemctl enable NetworkManager         #配置网络 加入开机启动 NetworkManager
+                systemctl enable dhcpcd         # 加入开机启动 dhcpcd
                 #---------------------------------------------------------------------------#
                 # 基础配置  时区 主机名 本地化 语言 安装语言包
                 #-----------------------------
@@ -564,14 +569,13 @@ if [[ ${principal_variable} == 4 ]];then
                 CheckingUsers=$(cat /Archin/UserName)
                 echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h}."
             fi
-    else 
-echo -e "${ws}#======================================================#${h}" #本区块退出后的提示
-echo -e "${ws}#::                 Exit in 5/s                        #${h}"
-echo -e "${ws}#::  When finished, restart the computer.              #${h}"
-echo -e "${ws}#::  If there is a problem during the installation     #${h}"
-echo -e "${ws}#::  please contact me. QQ:2763833502                  #${h}"
-echo -e "${ws}#======================================================#${h}"
-sleep 5
+        echo -e "${ws}#======================================================#${h}" #本区块退出后的提示
+        echo -e "${ws}#::                 Exit in 5/s                        #${h}"
+        echo -e "${ws}#::  When finished, restart the computer.              #${h}"
+        echo -e "${ws}#::  If there is a problem during the installation     #${h}"
+        echo -e "${ws}#::  please contact me. QQ:2763833502                  #${h}"
+        echo -e "${ws}#======================================================#${h}"
+        sleep 3
     fi
 
 fi  # 安装ArchLinux    选项4
