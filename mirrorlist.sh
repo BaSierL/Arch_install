@@ -5,7 +5,7 @@
 # URL Blog： https://basierl.github.io
 # URL GitHub： https://github.com/BaSierL/arch_install.git
 # URL Gitee ： https://gitee.com/auroot/arch_install.git
-
+clear;
 #==============-------------mirrorlist----------------==============
 cat > /etc/pacman.d/mirrorlist << EOF
 ################################################################################
@@ -161,5 +161,6 @@ Server = https://mirrors.tuna.tsinghua.edu.cn/archlinuxcn/\$arch
 #Server = file:///home/custompkgs
 EOF
 
-sleep 2
+sleep 1;
 sudo pacman -Syy archlinuxcn-keyring
+clear;
