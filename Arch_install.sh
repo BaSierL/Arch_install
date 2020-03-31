@@ -185,8 +185,34 @@ if [[ ${principal_variable} = 3 ]]; then
         netstat -antp | grep sshd
 
 fi
-
 ##======== 安装ArchLinux    选项4 ==========================================
+# 函数：设置root密码 用户  判断/etc/passwd文件中最后一个用户是否大于等于1000的普通用户，如果没有请先创建用户
+    ConfigurePassworld(){
+        PasswdFile="/etc/passwd"
+        if [ -e /Archin/UserName ]; then   #  设定一个文件匹配，这个文件在不在都无所谓
+            for ((Number=1;Number<=50;Number++))  # 设置变量Number 等于1 ；小于等于50 ； Number 1+1直到50
+            do
+            Query=$(tail -n ${Number} ${PasswdFile} | head -n 1 | cut -d":" -f3)
+                for Contrast in {1000..1100}
+                do
+                    if [[ $Query == $Contrast ]]; then
+                        CheckingUsers=$(cat ${PasswdFile} | grep "$Query" | cut -d":" -f1)
+                        CheckingID=$(cat ${PasswdFile} | grep "$Query" | cut -d":" -f3)
+                    fi
+                done 
+            done
+            echo "$CheckingUsers" > /Archin/UserName  
+            CheckingUsers=$(cat /Archin/UserName)
+            echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h} ${g}ID: ${b}${CheckingID}${h}."
+            sleep 2;
+        else
+            sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)"
+            CheckingUsers=$(cat /Archin/UserName)
+            echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h}."
+            sleep 2;
+        fi
+}
+
 if [[ ${principal_variable} == 4 ]];then
 #
     echo
@@ -369,113 +395,135 @@ if [[ ${principal_variable} == 4 ]];then
                     bash $0
                 fi      
         fi
-#------------------------------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------------------------------#
 # list22==========  Installation Desktop. 桌面环境 ==========444444444444444444444444444
         if [[ ${tasks} == 22 ]];then
-        sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh)" 
-        DESKTOP_ID="0"
+            ConfigurePassworld    # 引用函数：设置密码
+            sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh)" 
             echo
             echo -e "     ${w}***${h} ${b}Install Desktop${h} ${w}***${h}  "
             echo "---------------------------------"
             echo -e "${PSB} ${g}   KDE plasma.     ${h}${w}[1]${h}  --sddm"
             echo -e "${PSB} ${g}   Gnome.          ${h}${w}[2]${h}  --gdm"
             echo -e "${PSB} ${g}   Deepin.         ${h}${w}[3]${h}  --lightdm"    
-            echo -e "${PSB} ${g}   xfce.           ${h}${w}[4]${h}  --sddm"  
+            echo -e "${PSB} ${g}   Xfce4.          ${h}${w}[4]${h}  --lightdm"  
             echo -e "${PSB} ${g}   i3wm.           ${h}${w}[5]${h}  --sddm"
+            echo -e "${PSB} ${g}   lxde.           ${h}${w}[6]${h}  --lxdm"
+            echo -e "${PSB} ${g}   Cinnamon.       ${h}${w}[7]${h}  --lightdm"
             echo "---------------------------------"                           
             echo;
-                        #---------------------------------------------------------------------------#
-            # 设置root密码 用户  判断/etc/passwd文件中最后一个用户是否大于等于1000的普通用户，如果没有请先创建用户
-            #-----------------------------
-            PasswdFile="/etc/passwd"
-            if [ -e /Archin/UserName ]; then   #  设定一个文件匹配，这个文件在不在都无所谓
-                for ((Number=1;Number<=50;Number++))  # 设置变量Number 等于1 ；小于等于50 ； Number 1+1直到50
-                do
-                Query=$(tail -n ${Number} ${PasswdFile} | head -n 1 | cut -d":" -f3)
-                    for Contrast in {1000..1100}
-                    do
-                        if [[ $Query == $Contrast ]]; then
-                            CheckingUsers=$(cat ${PasswdFile} | grep "$Query" | cut -d":" -f1)
-                            CheckingID=$(cat ${PasswdFile} | grep "$Query" | cut -d":" -f3)
-                            #echo "A normal user already exists, The UserName: $CheckingUsers ID: $CheckingID."
-                            #echo "$Query" > /tmp/Query
-                            #DESKTOP_USERNAME=$(tail -n 1 ~/shu | cut -d" " -f1 )
-                            #echo "$DESKTOP_USERNAME"
-                            #rm -rf /tmp/Query
-                        #else
-                        fi
-                    done 
-                done
-                echo "$CheckingUsers" > /Archin/UserName  
-                CheckingUsers=$(cat /Archin/UserName)
-                echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h} ${g}ID: ${b}${CheckingID}${h}."
+# 定义 其他基本包函数
+    Programs_Name(){
+        sudo pacman -Sy  ttf-dejavu ttf-liberation thunar neofetch  unrar unzip p7zip \
+            zsh vim git ttf-wps-fonts google-chrome mtpfs mtpaint libmtp
+}
+# 定义 桌面环境配置函数
+        Desktop_Env_Config(){
+            systemctl enable ${DESKTOP_MANAGER}
+            sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
+            echo "exec ${DESKTOP_XINIT}" >> /etc/X11/xinit/xinitrc
+            CheckingUser=$(cat /Archin/UserName)
+            cp -rf /etc/X11/xinit/xinitrc  /home/${CheckingUser}/.xinitrc
+            echo -e "${PSG} ${w}${DESKTOP_ENVS} ${g}Desktop environment configuration completed.${h}" 
+            sleep 2;   # 以下是配置 ohmyzsh
+            #sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/install_zsh.sh)"
+}
+# 函数 桌面管理选择
+        Desktop_Manager(){
+            if [ DESKTOP_MANAGER_ID = 1 ]; then
+                DESKTOP_MANAGER_NAME="sddm" 
+            elif [ DESKTOP_MANAGER_ID = 1 ]; then
+                DESKTOP_MANAGER_NAME="gdm"
+            elif [ DESKTOP_MANAGER_ID = 1 ]; then
+                DESKTOP_MANAGER_NAME="lightdm"
+            elif [ DESKTOP_MANAGER_ID = 1 ]; then
+                DESKTOP_MANAGER_NAME="lxdm"
             else
-                sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)"
-                CheckingUsers=$(cat /Archin/UserName)
-                echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h}."
+                DESKTOP_MANAGER_NAME="sddm"
             fi
+}
             #---------------------------------------------------------------------------#
             # 开始安装桌面环境
+            DESKTOP_ID="0"   # 初始化变量
             #-----------------------------
             CHOICE_ITEM_DESKTOP=$(echo -e "${PSG} ${y} Please select desktop${h} ${JHB} ")
             read -p "${CHOICE_ITEM_DESKTOP}"  DESKTOP_ID
                 if  [[ `echo "${DESKTOP_ID}" | grep -E "^1$"`  = "1" ]] ; then
-                    DESKTOP_ENVS="plasma"
-                    pacman -S xorg xorg-server xorg-xinit mesa sddm sddm-kcm plasma plasma-desktop konsole dolphin kde-l10n-zh_cn kate \
-                    plasma-pa xorg-xwininfo ttf-dejavu ttf-liberation  thunar gvfs gvfs-smb gnome-keyring neofetch \
-                    cifs-utils powerdevil unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp kio-extras 
-                        echo -e "${PSG} ${g}Configuring desktop environment.${h}"
-                        systemctl enable sddm
-                        sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
-                        echo "exec startkde" >> /etc/X11/xinit/xinitrc
-                        cp -rf /etc/X11/xinit/xinitrc  /home/${CheckingUser}/.xinitrc
-                        echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
+                    echo -e "${PSG} ${g}Configuring desktop environment.${h}"
+                    sleep 1;
+                    pacman -Sy xorg xorg-server xorg-xinit mesa sddm sddm-kcm plasma plasma-desktop konsole \
+                    dolphin kate plasma-pa kio-extras powerdevil
+                    Programs_Name
+                    DESKTOP_ENVS="plasma"       # 桌面名
+                    DESKTOP_MANAGER="sddm"      # 桌面管理器
+                    DESKTOP_XINIT="startkde"    # 桌面环境启动
+                    Desktop_Env_Config          # 环境配置
                     #-------------------------------------------------------------------------------# 
                 elif  [[ `echo "${DESKTOP_ID}" | grep -E "^2$"`  = "2" ]] ; then
-                    DESKTOP_ENVS="gnome"
-                    pacman -Sy xorg xorg-server xorg-xinit mesa gnome gnome-extra gdm gnome-shell gvfs-mtp neofetch \                 
-                    gnome-tweaks gnome-shell-extensions unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp      
-                        echo -e "${PSG} ${g}Configuring desktop environment.${h}"
-                        systemctl enable gdm
-                        sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
-                        echo "exec gnome=session" >> /etc/X11/xinit/xinitrc
-                        cp -rf /etc/X11/xinit/xinitrc  /home/${CheckingUser}/.xinitrc
-                        echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
+                    echo -e "${PSG} ${g}Configuring desktop environment.${h}"
+                    sleep 1;
+                    pacman -Sy xorg xorg-server xorg-xinit mesa gnome gnome-extra gdm gnome-tweaks gnome-shell \
+                    gnome-shell-extensions  gvfs-mtp gvfs gvfs-smb gnome-keyring 
+                    Programs_Name
+                    DESKTOP_ENVS="gnome"            # 桌面名
+                    DESKTOP_MANAGER="gdm"           # 桌面管理器
+                    DESKTOP_XINIT="gnome=session"   # 桌面环境启动
+                    Desktop_Env_Config              # 环境配置
                     #-------------------------------------------------------------------------------#
                 elif  [[ `echo "${DESKTOP_ID}" | grep -E "^3$"`  = "3" ]] ; then
-                    DESKTOP_ENVS="deepin"
-                    pacman -Sy xorg xorg-server xorg-xinit mesa deepin deepin-extra lightdm neofetch \
-                    lightdm-deepin-greeter unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp                              
-                        echo -e "${PSG} ${g}Configuring desktop environment.${h}"
-                        systemctl enable lightdm
-                        sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
-                        sed -i 's/greeter-session=example-gtk-gnome/greeter-session=lightdm-deepin-greeter/'  /etc/lightdm/lightdm.conf
-                        echo "exec startdde" >> /etc/X11/xinit/xinitrc
-                        cp -rf /etc/X11/xinit/xinitrc  /home/${CheckingUser}/.xinitrc
-                        echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
+                    echo -e "${PSG} ${g}Configuring desktop environment.${h}"
+                    sleep 1;
+                    pacman -Sy xorg xorg-server xorg-xinit mesa deepin deepin-extra lightdm lightdm-deepin-greeter                             
+                    Programs_Name
+                    sed -i 's/greeter-session=example-gtk-gnome/greeter-session=lightdm-deepin-greeter/'  /etc/lightdm/lightdm.conf
+                    DESKTOP_ENVS="deepin"      # 桌面名
+                    DESKTOP_MANAGER="lightdm"  # 桌面管理器
+                    DESKTOP_XINIT="startdde"   # 桌面环境启动
+                    Desktop_Env_Config         # 环境配置
                     #-------------------------------------------------------------------------------#
                 elif  [[ `echo "${DESKTOP_ID}" | grep -E "^4$"`  = "4" ]] ; then
-                    DESKTOP_ENVS="xfce"
-                    pacman -Sy xorg xorg-server xorg-xinit mesa xfce4 xfce4-goodies sddm light-locker xfce4-power-manager \
-                    libcanberra libcanberra-pulse neofetch unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp 
-                        echo -e "${PSG} ${g}Configuring desktop environment.${h}"
-                        systemctl enable sddm
-                        sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
-                        echo "exec startxfce4" >> /etc/X11/xinit/xinitrc
-                        cp -rf /etc/X11/xinit/xinitrc  /home/${CheckingUser}/.xinitrc
-                        echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
+                    echo -e "${PSG} ${g}Configuring desktop environment.${h}"
+                    sleep 1;
+                    pacman -Sy xorg xorg-server xorg-xinit mesa xfce4 xfce4-goodies light-locker xfce4-power-manager \
+                    libcanberra lightdm lightdm-gtk-greeter 
+                    Programs_Name
+                    DESKTOP_ENVS="xfce"         # 桌面名
+                    DESKTOP_MANAGER="lightdm"   # 桌面管理器
+                    DESKTOP_XINIT="startxfce4"  # 桌面环境启动
+                    Desktop_Env_Config          # 环境配置
                     #-------------------------------------------------------------------------------#
                 elif  [[ `echo "${DESKTOP_ID}" | grep -E "^5$"`  = "5" ]] ; then
-                    DESKTOP_ENVS="i3wm"  
-                    pacman -Sy i3 i3-gaps i3lock i3status compton dmenu feh picom nautilus polybar gvfs-mtp sddm \
-                    neofetch unrar unzip p7zip google-chrome zsh vim git ttf-wps-fonts mtpaint mtpfs libmtp 
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
-                    systemctl enable sddm
-                    sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/setting_xinitrc.sh)"
-                    echo "exec i3" >> /etc/X11/xinit/xinitrc
-                    cp -rf /etc/X11/xinit/xinitrc  /home/${CheckingUser}/.xinitrc
-                    echo -e "${PSG} ${g}Desktop environment configuration completed.${h}"
-                    #-------------------------------------------------------------------------------#    
+                    sleep 1; 
+                    Programs_Name
+                    pacman -Sy xorg xorg-server xorg-xinit mesa i3 i3-gaps i3lock i3status compton dmenu feh \
+                    picom nautilus polybar gvfs-mtp sddm  xfce4-terminal termite
+                    sed -i 's/i3-sensible-terminal/--no-startup-id termite/g' /home/${CheckingUser}/.config/i3/config  # 更改终端
+                    DESKTOP_ENVS="i3wm"     # 桌面名
+                    DESKTOP_MANAGER="sddm"  # 桌面管理器
+                    DESKTOP_XINIT="i3"      # 桌面环境启动
+                    Desktop_Env_Config      # 环境配置
+                    #-------------------------------------------------------------------------------#  
+                elif  [[ `echo "${DESKTOP_ID}" | grep -E "^6$"`  = "6" ]] ; then
+                    echo -e "${PSG} ${g}Configuring desktop environment.${h}"
+                    sleep 1; 
+                    Programs_Name
+                    pacman -Sy xorg xorg-server xorg-xinit lxdm lxde
+                    DESKTOP_ENVS="lxde"     # 桌面名
+                    DESKTOP_MANAGER="lxdm"  # 桌面管理器
+                    DESKTOP_XINIT="startlxde"      # 桌面环境启动
+                    Desktop_Env_Config      # 环境配置
+                #-------------------------------------------------------------------------------#  
+                elif  [[ `echo "${DESKTOP_ID}" | grep -E "^7$"`  = "7" ]] ; then
+                    echo -e "${PSG} ${g}Configuring desktop environment.${h}"
+                    sleep 1; 
+                    Programs_Name   
+                    pacman -Sy xorg xorg-server xorg-xinit mesa cinnamon blueberry gnome-screenshot lightdm lightdm-gtk-greeter \
+                    gvfs gvfs-mtp gvfs-afc exfat-utils faenza-icon-theme accountsservice gnoem-terminal
+                    DESKTOP_ENVS="Cinnamon"     # 桌面名
+                    DESKTOP_MANAGER="lightdm"  # 桌面管理器
+                    DESKTOP_XINIT="cinnamon-session"      # 桌面环境启动
+                    Desktop_Env_Config      # 环境配置
                 fi
         fi
 #------------------------------------------------------------------------------------------------------#
@@ -530,45 +578,17 @@ if [[ ${principal_variable} == 4 ]];then
                     echo -e "${PSG} ${w}Time zone changed to 'Shanghai'. ${h}"
                 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && hwclock --systohc # 将时区更改为"上海" / 生成 /etc/adjtime
                     echo -e "${PSG} ${w}Localization language settings. ${h}"
-                echo "Archlinux" > /etc/hostname  # 设置主机名
-                sed -i 's/#.*en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen # 本地化设置 "英文"
-                sed -i 's/#.*zh_CN.UTF-8 UTF-8/zh_CN.UTF-8 UTF-8/' /etc/locale.gen # 本地化设置 "中文"
+                echo "Archlinux" > /etc/hostname        # 设置主机名
+                sed -i 's/#.*en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen      # 本地化设置 "英文"
+                sed -i 's/#.*zh_CN.UTF-8 UTF-8/zh_CN.UTF-8 UTF-8/' /etc/locale.gen      # 本地化设置 "中文"
                 locale-gen       # 生成 locale
                 echo -e "${PSG} ${w}Configure local language defaults 'en_US.UTF-8'. ${h}"
                 echo "LANG=en_US.UTF-8" > /etc/locale.conf       # 系统语言 "英文" 默认为英文   
-                # echo "LANG=zh_CN.UTF-8" > /etc/locale.conf       # 系统语言 "中文"
+                # echo "LANG=zh_CN.UTF-8" > /etc/locale.conf     # 系统语言 "中文"
                 echo -e "${PSG} ${w}Install Fonts. ${h}"
                 pacman -Sy wqy-microhei wqy-zenhei ttf-dejavu ttf-ubuntu-font-family noto-fonts # 安装语言包
                 #---------------------------------------------------------------------------#
-                # 设置root密码 用户  判断/etc/passwd文件中最后一个用户是否大于等于1000的普通用户，如果没有请先创建用户
-                #-----------------------------
-            PasswdFile="/etc/passwd"
-            if [ -e /Archin/UserName ]; then   # /tmp/QueryUser 设定一个文件匹配，这个文件在不在都无所谓
-                for ((Number=1;Number<=50;Number++))  # 设置变量Number 等于1 ；小于等于50 ； Number 1+1直到50
-                do
-                Query=$(tail -n ${Number} ${PasswdFile} | head -n 1 | cut -d":" -f3)
-                    for Contrast in {1000..1100}
-                    do
-                        if [[ $Query == $Contrast ]]; then
-                            CheckingUsers=$(cat ${PasswdFile} | grep "$Query" | cut -d":" -f1)
-                            CheckingID=$(cat ${PasswdFile} | grep "$Query" | cut -d":" -f3)
-                            #echo "A normal user already exists, The UserName: $CheckingUsers ID: $CheckingID."
-                            #echo "$Query" > /tmp/Query
-                            #DESKTOP_USERNAME=$(tail -n 1 ~/shu | cut -d" " -f1 )
-                            #echo "$DESKTOP_USERNAME"
-                            #rm -rf /tmp/Query
-                        #else
-                        fi
-                    done 
-                done
-                echo "$CheckingUsers" > /Archin/UserName  
-                CheckingUsers=$(cat /Archin/UserName)
-                echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h} ${g}ID:${h} ${b}${CheckingID}${h}."
-            else
-                sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/useradd.sh)"
-                CheckingUsers=$(cat /Archin/UserName)
-                echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h}."
-            fi
+                ConfigurePassworld    # 引用函数：设置密码
         echo -e "${ws}#======================================================#${h}" #本区块退出后的提示
         echo -e "${ws}#::                 Exit in 5/s                        #${h}"
         echo -e "${ws}#::  When finished, restart the computer.              #${h}"
@@ -590,3 +610,4 @@ case $principal_variable in
     echo -e "${wg}#----------------------------------#${h}"
     exit 0
 esac
+#---------------------------------------------------------------------------------#
