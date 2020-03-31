@@ -46,8 +46,10 @@ PSG=$(echo -e "${g} ::==>${h}")
 # 提示 黄
 PSY=$(echo -e "${y} ::==>${h}")
 #-----------------------------
+clear;
 null="/dev/null"
 if [ ! -e /Archin/USERNAMES ]; then 
+        echo;
         echo;
         SETTINGS_ROOT_PA=$(echo -e "${PSY} ${g}Settings ${y}Root Password.${h}${JHG} ")
         SETTINGS_ROOT_PB=$(echo -e "${PSY} ${g}Please enter the ${y}Root Password${h}${g} again.${h}${JHG} ")
@@ -77,7 +79,7 @@ if [ ! -e /Archin/USERNAMES ]; then
             echo;
             echo -e "${PSG} ${g}Password setting complete.[OK] ${h}"
             echo "${USER_NAME}" > /Archin/UserName
-            sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/install_zsh.sh)"
+            sleep 2;
         else    
             echo -e "${PSR} ${r}${USER_NAME} Two passwords are inconsistent.[X] ${h}"
             exit 31;
@@ -91,7 +93,7 @@ if [ ! -e /Archin/USERNAMES ]; then
         }
         SUDOERS_LIST=$(S_LINE)
         chmod 770 /etc/sudoers
-            sed -i "${SUDOERS_LIST}i %wheel ALL=\(ALL\) NOPASSWD: ALL" /etc/sudoers || echo -e "${PSY} ${y}Configure Sudoers fail. ${h}"
+        sed -i "${SUDOERS_LIST}i %wheel ALL=\(ALL\) NOPASSWD: ALL" /etc/sudoers || echo -e "${PSY} ${y}Configure Sudoers fail. ${h}"
         chmod 440 /etc/sudoers   
 else
     exit 0;
