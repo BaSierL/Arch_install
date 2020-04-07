@@ -1,7 +1,7 @@
 #!/bin/bash
 # Author: Auroot/BaSierl
 # QQ： 2763833502
-# Description： Arch Linux 安装脚本 
+# Description： Arch Linux 安装脚本  V3.0
 # URL Blog： https://basierl.github.io
 # URL GitHub： https://github.com/BaSierL/arch_install.git
 # URL Gitee ： https://gitee.com/auroot/arch_install.git
@@ -12,6 +12,7 @@ g='\033[1;32m'	#---绿
 y='\033[1;33m'	#---黄
 b='\033[1;36m'	#---蓝
 w='\033[1;37m'	#---白
+h='\033[0m'		#---后缀
 #-----------------------------#
 rw='\033[1;41m'    #--红白
 wg='\033[1;42m'    #--白绿
@@ -20,10 +21,7 @@ wb='\033[1;44m'    #--白蓝
 wq='\033[1;45m'    #--白紫
 wa='\033[1;46m'    #--白青
 wh='\033[1;46m'    #--白灰
-h='\033[0m'		   #---后缀
 bx='\033[1;4;36m'  #---蓝 下划线
-wy='\033[1;41m' 
-h='\033[0m'
 #-----------------------------#
 # 交互 蓝
 JHB=$(echo -e "${b}-=>${h}")
@@ -359,25 +357,17 @@ if [[ ${principal_variable} == 4 ]];then
             #-------------------
             sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/mirrorlist.sh)" 
             echo;
-            echo -e "${PSG} ${g}Installing Audio driver.${h}"
-            pacman -Sy alsa-utils pulseaudio pulseaudio-bluetooth pulseaudio-alsa  #安装声音软件包
-            echo "load-module module-bluetooth-policy" >> /etc/pulse/system.pa
-            echo "load-module module-bluetooth-discover" >> /etc/pulse/system.pa
-
-            echo -e "${PSG} ${g}Installing input driver.${h}"
-            pacman -Sy xf86-input-synaptics xf86-input-libinput create_ap     #触摸板驱动
-            echo;
-            READDISK_DRIVER_GPU=$(echo -e "${PSG} ${y}Please choose: Intel[1] AMD[2]${h} ${JHB} ")
-            read -p "${READDISK_DRIVER_GPU}"  DRIVER_GPU_ID
+            READDRIVE_GPU=$(echo -e "${PSG} ${y}Please choose: Intel[1] AMD[2]${h} ${JHB} ")
+            read -p "${READDRIVE_GPU}"  DRIVER_GPU_ID
                 if  [[ `echo "${DRIVER_GPU_ID}" | grep -E "^1$"`  = "1" ]] ; then
-                    pacman -Sy xf86-video-intel intel-ucode xf86-video-intel
+                    pacman -Sy xf86-video-intel intel-ucode xf86-video-intel xf86-video-intel mesa-libgl libva-intel-driver libvdpau-va-gl
                 elif [[ `echo "${DRIVER_GPU_ID}" | grep -E "^2$"`  = "2" ]] ; then
                     pacman -Sy xf86-video-ati amd-ucode
                 fi
             lspci -k | grep -A 2 -E "(VGA|3D)"
             echo;
-            READDISK_DRIVER_NVIDIA=$(echo -e "${PSG} ${y}Please choose: Nvidia[1] Exit[2]${h} ${JHB} ")
-            read -p "${READDISK_DRIVER_NVIDIA}"  DRIVER_NVIDIA_ID
+            READDRIVE_NVIDIA=$(echo -e "${PSG} ${y}Please choose: Nvidia[1] Exit[2]${h} ${JHB} ")
+            read -p "${READDRIVE_NVIDIA}"  DRIVER_NVIDIA_ID
                 if  [[ `echo "${DRIVER_GPU_ID}" | grep -E "^1$"`  = "1" ]] ; then
                     pacman -Sy nvidia nvidia-utils opencl-nvidia lib32-nvidia-utils lib32-opencl-nvidia mesa lib32-mesa-libgl  optimus-manager optimus-manager-qt 
                     systemctl enable optimus-manager.service
@@ -415,7 +405,7 @@ if [[ ${principal_variable} == 4 ]];then
 # 定义 其他基本包函数
     Programs_Name(){
         sudo pacman -Sy  ttf-dejavu ttf-liberation thunar neofetch  unrar unzip p7zip \
-            zsh vim git ttf-wps-fonts google-chrome mtpfs mtpaint libmtp
+            zsh vim git ttf-wps-fonts google-chrome mtpfs mtpaint libmtp kchmviewer file-roller flameshot 
 }
 # 定义 桌面环境配置函数
         Desktop_Env_Config(){
@@ -452,7 +442,7 @@ if [[ ${principal_variable} == 4 ]];then
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                     sleep 1;
                     pacman -Sy xorg xorg-server xorg-xinit mesa sddm sddm-kcm plasma plasma-desktop konsole \
-                    dolphin kate plasma-pa kio-extras powerdevil
+                    dolphin kate plasma-pa kio-extras powerdevil kcm-fcitx
                     Programs_Name
                     DESKTOP_ENVS="plasma"       # 桌面名
                     DESKTOP_MANAGER="sddm"      # 桌面管理器
@@ -508,7 +498,7 @@ if [[ ${principal_variable} == 4 ]];then
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                     sleep 1; 
                     Programs_Name
-                    pacman -Sy xorg xorg-server xorg-xinit lxdm lxde
+                    pacman -Sy xorg xorg-server xorg-xinit lxdm lxde mesa
                     DESKTOP_ENVS="lxde"     # 桌面名
                     DESKTOP_MANAGER="lxdm"  # 桌面管理器
                     DESKTOP_XINIT="startlxde"      # 桌面环境启动
@@ -525,6 +515,27 @@ if [[ ${principal_variable} == 4 ]];then
                     DESKTOP_XINIT="cinnamon-session"      # 桌面环境启动
                     Desktop_Env_Config      # 环境配置
                 fi
+            READDRIVE_CommonDrive=$(echo -e "${PSG} ${y}Whether to install Common Drivers: Install[y] On[*]${h} ${JHB} ")
+            read -p "${READDRIVE_CommonDrive}" CommonDrive
+            echo;
+            case ${CommonDrive} in
+            y | Y | yes | YES)
+                #安装声音软件包
+                echo -e "${PSG} ${g}Installing Audio driver.${h}"
+                pacman -Sy alsa-utils pulseaudio pulseaudio-bluetooth pulseaudio-alsa  
+                echo "load-module module-bluetooth-policy" >> /etc/pulse/system.pa
+                echo "load-module module-bluetooth-discover" >> /etc/pulse/system.pa
+                #触摸板驱动
+                echo -e "${PSG} ${g}Installing input driver.${h}"
+                pacman -Sy xf86-input-synaptics xf86-input-libinput create_ap  
+                # 蓝牙驱动
+                echo -e "${PSG} ${g}Installing Bluetooth driver.${h}"
+                pacman -Sy bluez bluez-utils blueman bluedevil
+            ;;
+            * )
+                exit 0
+            ;;
+            esac
         fi
 #------------------------------------------------------------------------------------------------------#
 # list5==========  进入系统后的配置 ===========55555555555555555555
