@@ -1,7 +1,7 @@
 #!/bin/bash
 # Author: Auroot/BaSierl
 # QQ： 2763833502
-# Description： Arch Linux 安装脚本 
+# Description： Arch Linux 安装脚本 V2.0
 # URL Blog： https://basierl.github.io
 # URL GitHub： https://github.com/BaSierL/arch_install.git
 # URL Gitee ： https://gitee.com/auroot/arch_install.git
