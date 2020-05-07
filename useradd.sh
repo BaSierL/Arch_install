@@ -54,7 +54,8 @@ if [ ! -e /Archin/USERNAMES ]; then
         SETTINGS_ROOT_PA=$(echo -e "${PSY} ${g}Settings ${y}Root Password.${h}${JHG} ")
         SETTINGS_ROOT_PB=$(echo -e "${PSY} ${g}Please enter the ${y}Root Password${h}${g} again.${h}${JHG} ")
         SETTINGS_USERNAME=$(echo -e "${PSY} ${g}Settings UserName.${h}${JHG} ")
-        SETTINGS_USER_PASS=$(echo -e "${PSY} ${g}Settings Password.${h}${JHG} ")
+        SETTINGS_USER_PA=$(echo -e "${PSY} ${g}Settings ${y}Password.${h}${JHG} ")
+        SETTINGS_USER_PB=$(echo -e "${PSY} ${g}Please enter the ${y}Password${h}${g} again.${h}${JHG} ")
         read -p "${SETTINGS_ROOT_PA}" ROOT_PASSWORD_A   #输入第一次Root密码
         read -p "${SETTINGS_ROOT_PB}" ROOT_PASSWORD_B   #输入第二次Root密码
         if [ ${ROOT_PASSWORD_A} == ${ROOT_PASSWORD_B} ]; then
@@ -71,8 +72,8 @@ if [ ! -e /Archin/USERNAMES ]; then
         #-----------------------------
         echo;
         read -p "${SETTINGS_USERNAME}" USER_NAME
-        read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_A
-        read -p "${SETTINGS_USER_PASS}" USER_PASSWORD_B
+        read -p "${SETTINGS_USER_PA}" USER_PASSWORD_A
+        read -p "${SETTINGS_USER_PB}" USER_PASSWORD_B
         if [ ${USER_PASSWORD_A} == ${USER_PASSWORD_B} ]; then
             useradd -m -g users -G wheel -s /bin/bash ${USER_NAME}
             echo ${USER_NAME}:${USER_PASSWORD_B} | chpasswd &> $null

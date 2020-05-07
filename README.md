@@ -1,10 +1,9 @@
-
-# Arch 安装脚本
+# Arch 安装脚本<a href='https://gitee.com/auroot/Arch_install/stargazers'><img src='https://gitee.com/auroot/Arch_install/badge/star.svg?theme=dark' alt='star'></img></a>
 #### Script说明书 `注意大写的"A"`
-#### [**GitHub 仓库地址**](https://github.com/BaSierL/Arch_install)
+#### [**点这里 GitHub 仓库地址**](https://github.com/BaSierL/Arch_install)
 ![输入图片说明](https://images.gitee.com/uploads/images/2020/0312/101913_b0e6e9cf_5700645.jpeg "1 (2).jpg")
 
-## [安装图文教程](https://www.cnblogs.com/bs20/p/12561718.html)
+## [点这里 安装图文教程](https://blog.csdn.net/weixin_42871436/article/details/105126833)
 
 
 使用`curl` 下载`Arch_install.sh` 其他脚本我会内置到主体Script中，可以大大缩短你的安装时间：
@@ -23,6 +22,11 @@ git clone https://gitee.com/auroot/Arch_install.git
 chmod +x Arch_install.sh
 bash Arch_install.sh
 ```
+**联系**
+```
+QQ: 2763833502
+Q群: 346952836
+```
 ## 脚本介绍
 - 从无到有的一个过程：
 - 许多重要提示，以及错误提示，熟悉脚本后10分钟内即可安装完毕，小白最好慢慢来，看清楚每个输入提示！
@@ -33,7 +37,7 @@ bash Arch_install.sh
 - 自动配置源：Mirrorlist、Archlinucn
 - 可 ```UEFI```与```Boot Legacy```模式，“自动判断”
 - 驱动：I/O、Audio、蓝牙、Intel、AMD、Nvidia，安装完成自动配置。
-- 桌面：Plasma(Min)、Gnome、Deepin
+- 桌面：Plasma(Min)、Gnome、Deepin、Xfce、i3
 - 加固判断两次root和普通密码是否输入正确，以防输入错误，导致无法进入系统。
 
 
