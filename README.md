@@ -25,20 +25,22 @@ bash Arch_install.sh
 **联系**
 ```
 QQ: 2763833502
-Q群: 346952836
 ```
 ## 脚本介绍
 - 从无到有的一个过程：
 - 许多重要提示，以及错误提示，熟悉脚本后10分钟内即可安装完毕，小白最好慢慢来，看清楚每个输入提示！
 - 首页可看当前是否处于 Chroot 模式 开[ON]/关[OFF]
 - Script启动主页显示IP地址(Wifi/有线)，提示：连接SSH服务命令
-- 一键配置：SSH服务
-- 网络配置：Wifi、有线
-- 自动配置源：Mirrorlist、Archlinucn
-- 可 ```UEFI```与```Boot Legacy```模式，“自动判断”
-- 驱动：I/O、Audio、蓝牙、Intel、AMD、Nvidia，安装完成自动配置。
-- 桌面：Plasma(Min)、Gnome、Deepin、Xfce、i3
-- 加固判断两次root和普通密码是否输入正确，以防输入错误，导致无法进入系统。
+- 一键配置 SSH服务 镜像源;
+- 网络配置：Wifi、有线;
+- 可 ```UEFI```与```Boot Legacy```模式，“自动判断”;
+- 自动配置 I/O，音频，蓝牙；
+- 可选安装 Intel、AMD、Nvidia，安装完成自动配置；
+- 桌面：Plasma(Min)、Gnome、Deepin、Xfce、i3wm、lxde、Cinnamon；
+- 可选显示管理器：sddm、gdm、lightdm、lxdm；或默认(default)，可任意搭配,搭配时可以去网上搜一下,找最适合的搭配方案；
+- 加固判断两次root和普通密码是否输入正确，以防输入错误，导致无法进入系统;
+- 自检验最新Arch_install.sh,并提示更新;
+- 脚本日志 保存日志地址:/tmp/Arch_install.log
 
 
 ![输入图片说明](https://images.gitee.com/uploads/images/2020/0323/143132_e370a19e_5700645.jpeg)
