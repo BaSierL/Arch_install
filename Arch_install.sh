@@ -284,7 +284,7 @@ if [[ ${principal_variable} == 4 ]];then
             READDISK_B=$(echo -e "${PSY} ${y}Choose your root[/] partition: ${g}/dev/sdX[0-9] | sdX[0-9] ${h}${JHB}")
             read -p "${READDISK_B}"  DISK_LIST_ROOT   #给用户输入接口
                 DISK_NAMEL_B=$(echo "${DISK_LIST_ROOT}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
-                if echo ${DISK_NAMEL_B} | grep -E "^sd[a-z][0-9]$" &> ${null} ; then
+                if echo ${DISK_NAMEL_B} | grep -E "^[a-z]*[0-9]$" &> ${null} ; then
                     mkfs.ext4 /dev/${DISK_NAMEL_B} | tee -a /tmp/Arch_install.log
                     mount /dev/${DISK_NAMEL_B} /mnt 
                     ls /sys/firmware/efi/efivars &> ${null} && mkdir -p /mnt/boot/efi || mkdir -p /mnt/boot
@@ -303,7 +303,7 @@ if [[ ${principal_variable} == 4 ]];then
             READDISK_C=$(echo -e "${PSY} ${y}Choose your EFI / BOOT partition: ${g}/dev/sdX[0-9] | sdX[0-9] ${h}${JHB}")
             read -p "${READDISK_C}"  DISK_LIST_GRUB   #给用户输入接口
                 DISK_NAMEL_C=$(echo "${DISK_LIST_GRUB}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
-                if echo ${DISK_NAMEL_C} | grep -E "^sd[a-z][0-9]$" &> ${null} ; then
+                if echo ${DISK_NAMEL_C} | grep -E "^[a-z]*[0-9]$" &> ${null} ; then
                     mkfs.vfat /dev/${DISK_NAMEL_C} | tee -a /tmp/Arch_install.log
                     ls /sys/firmware/efi/efivars &> ${null} && mount /dev/${DISK_NAMEL_C} /mnt/boot/efi || mount /dev/${DISK_NAMEL_C} /mnt/boot
                 else
@@ -381,7 +381,7 @@ if [[ ${principal_variable} == 4 ]];then
             # cp -rf /etc/pacman.conf.bak /mnt/etc/pacman.conf 2&> ${null}
             # cp -rf /etc/pacman.d/mirrorlist.bak /mnt/etc/pacman.d/mirrorlist 2&> ${null}
     fi
-#-------------------以下需要在Chroot新系统下运行----------------------------------------#
+# list21------------------------------------------------------------------------------------------------------#
 #==========  Installation Drive. 驱动  ===========3333333333333
     if [[ ${tasks} == 21 ]];then
         #---------------------------------------------------------------------------#
@@ -437,7 +437,7 @@ if [[ ${principal_variable} == 4 ]];then
                 ;;
             esac      
     fi
-#-------------------以下需要在Chroot新系统下运行----------------------------------------#
+#-----------------------------------------------------------------------------------------------------#
 # list22==========  Installation Desktop. 桌面环境 ==========444444444444444444444444444
     if [[ ${tasks} == 22 ]];then
         ConfigurePassworld    # 引用函数：设置密码
@@ -523,7 +523,7 @@ if [[ ${principal_variable} == 4 ]];then
             sudo pacman -Sy  ttf-dejavu ttf-liberation thunar neofetch  unrar unzip p7zip \
                 zsh vim git ttf-wps-fonts google-chrome mtpfs mtpaint libmtp kchmviewer file-roller flameshot 
         }
-#-------------------以下需要在Chroot新系统下运行----------------------------------------#
+#-----------#---------------------------------------------------------------------------#
         # 开始安装桌面环境
         #-----------------------------
         echo
@@ -656,7 +656,7 @@ if [[ ${principal_variable} == 4 ]];then
             ;;
             esac
     fi
-#-------------------以下需要在Chroot新系统下运行----------------------------------------#
+#------------------------------------------------------------------------------------------------------#
 # list5==========  进入系统后的配置 ===========55555555555555555555
 
     if [[ ${tasks} == 23 ]];then
