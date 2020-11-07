@@ -1,14 +1,20 @@
-# Arch 安装脚本<a href='https://gitee.com/auroot/Arch_install/stargazers'><img src='https://gitee.com/auroot/Arch_install/badge/star.svg?theme=dark' alt='star'></img></a>
+# Arch 安装脚本
+
 #### Script说明书 `注意大写的"A"`
 #### [**点这里 GitHub 仓库地址**](https://github.com/BaSierL/Arch_install)
 ![输入图片说明](https://images.gitee.com/uploads/images/2020/0312/101913_b0e6e9cf_5700645.jpeg "1 (2).jpg")
 
 ## [点这里 安装图文教程](https://blog.csdn.net/weixin_42871436/article/details/105126833)
 
+- **由于ArchLinux经常更新，安装方式也随之改变，导致脚本无法与之匹配，发生在某阶段出现错误.**
+- **如果您发现问题，或以加以改进，可以创建Pull Request 提交脚本.**
+
+### **新版对话框式安装脚本正在编写，可进入Archin分支查看，加入请加作者！！！**
+
 
 使用`curl` 下载`Arch_install.sh` 其他脚本我会内置到主体Script中，可以大大缩短你的安装时间：
 ```Shell
-curl -fsSL http://wz4.in/10VQP > Arch_install.sh  #缩短后地地址
+curl -fsSL ****  #缩短后地地址
 ```
 ```Shell
 curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/Arch_install.sh > Arch_install.sh
@@ -24,7 +30,7 @@ bash Arch_install.sh
 ```
 **联系**
 ```
-QQ: 2763833502
+QQ/微信: 2763833502
 ```
 ## 脚本介绍
 - 从无到有的一个过程：
