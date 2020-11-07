@@ -1,7 +1,9 @@
 # Arch 安装脚本
 
 #### Script说明书 `注意大写的"A"`
+
 #### [**点这里 GitHub 仓库地址**](https://github.com/BaSierL/Arch_install)
+
 ![输入图片说明](https://images.gitee.com/uploads/images/2020/0312/101913_b0e6e9cf_5700645.jpeg "1 (2).jpg")
 
 ## [点这里 安装图文教程](https://blog.csdn.net/weixin_42871436/article/details/105126833)
@@ -13,26 +15,36 @@
 
 
 使用`curl` 下载`Arch_install.sh` 其他脚本我会内置到主体Script中，可以大大缩短你的安装时间：
+
 ```Shell
 curl -fsSL ****  #缩短后地地址
 ```
+
 ```Shell
-curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/Arch_install.sh > Arch_install.sh
+curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/auin.sh > auin.sh
 ```
+
 Arch Image中没有加入Git命令，所以如果你想克隆仓库，只能自行装```sudo pacman -S git```
+
 ```Shell
 git clone https://gitee.com/auroot/Arch_install.git
 ```
+
 **切换至Script目录中**
+
 ```Shell
-chmod +x Arch_install.sh
-bash Arch_install.sh
+chmod +x auin.sh
+bash auin.sh
 ```
+
 **联系**
+
 ```
 QQ/微信: 2763833502
 ```
+
 ## 脚本介绍
+
 - 从无到有的一个过程：
 - 许多重要提示，以及错误提示，熟悉脚本后10分钟内即可安装完毕，小白最好慢慢来，看清楚每个输入提示！
 - 首页可看当前是否处于 Chroot 模式 开[ON]/关[OFF]
@@ -59,6 +71,7 @@ QQ/微信: 2763833502
 
 
 错误回馈码（exit）：
+
 ```
     exit 20    # 分区时输入错误
     exit 21    # 格式化Root分区时 输入错误 
