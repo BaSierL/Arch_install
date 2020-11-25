@@ -169,6 +169,6 @@ EOF
 # 判断/tmp/Arch_install.log日志文件中是否有"archlinuxcn-keyring=yes"
 # [存在]  退出  \ [不存在] 更新archlinuxcn-keyring并记录
 
-sudo pacman -S --needed --noconfirm archlinuxcn-keyring | tee -a /tmp/install_programs.log
+sudo pacman -Sy --needed --noconfirm archlinuxcn-keyring 
 
 
