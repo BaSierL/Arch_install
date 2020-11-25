@@ -6,18 +6,28 @@
 # URL GitHub: https://github.com/BaSierL/arch_install.git
 # URL Gitee : https://gitee.com/auroot/arch_install.git
 # Github.io : https://basierl.github.io
-set -x
+#set -x
 #========变量
 null="/dev/null"
-# 目录 Directory
+# 脚本模块位置
+Module="${PWD}/Module"
+# 日志目录 Log Directory
 Temp_Data="${PWD}/Temp_Data"
+# Wifi需要的NetworkManager等包定位
+NetworkManager_Pkg="${PWD}/Pkg/NetworkManager"
 # 记录脚本日志的文件地址
 Install_Log="${PWD}/Temp_Data/Arch_install.log"
-#------检查日志文件是否存在
+# 初始密码
+PASS="123456"
+#------检查必要目录或文件是否存在
 if [ ! -d "${Temp_Data}" ]; then
     mkdir -p "${Temp_Data}"
 fi
+if [ ! -d "${Module}" ]; then
+    mkdir -p "${Module}"
+fi
 if [ ! -e "${Install_Log}" ]; then
+
     touch "${Install_Log}"
 fi
 Command=$(echo "$0")
@@ -44,25 +54,16 @@ fi
 trap 'Ct_log "DO NOT SEND CTRL + C WHEN EXECUTE SCRIPT !!!! "'  2
 # 命令 
 # Ct_log “命令”
-#
 
-# 脚本模块位置
-Module="${PWD}/Module"
-Temp_Data="${PWD}/Temp_Data"
-# Wifi需要的NetworkManager等包定位
-NetworkManager_Pkg="${PWD}/Pkg/NetworkManager"
-# 记录脚本日志的文件地址
-Install_Log="${PWD}/Temp_Data/Arch_install.log"
-# 初始密码
-PASS="123456"
 # 模块链接
 # Default settings
 Auroot_Git=${Auroot_Git:-https://gitee.com/auroot/Arch_install/raw/master/Module}
-Wifi_Module=${Wifi_Module:-curl -fsSL ${Auroot_Git}/Wifi_Connect.sh}
 Mirrorlist_Module=${Mirrorlist_Module:-curl -fsSL ${Auroot_Git}/mirrorlist.sh}
+Wifi_Module=${Wifi_Module:-curl -fsSL ${Auroot_Git}/Wifi_Connect.sh}
 Set_X_Module=${Set_X_Module:-curl -fsSL ${Auroot_Git}/setting_xinitrc.sh}
-Log_Module=${Log_Module:-curl -fsSL ${Auroot_Git}/log.sh}
 Useradd_Module=${Useradd_Module:-curl -fsSL ${Auroot_Git}/useradd.sh}
+# Log_Module=${Log_Module:-curl -fsSL ${Auroot_Git}/log.sh}
+
 
 #========网络变量
 #有线
@@ -108,6 +109,22 @@ PSG=$(echo -e "${g} ::==>${h}")
 PSY=$(echo -e "${y} ::==>${h}")
 #-----------------------------
 
+#--函数------检查必要文件是否存在
+Update_Module(){
+    if [ ! -e "${Module}"/mirrorlist.sh ]; then
+        sh -c "${Mirrorlist_Module}" > "${Module}"/mirrorlist.sh  
+        chmod +x "${Module}"/mirrorlist.sh
+    elif [ ! -e "${Module}"/Wifi_Connect.sh ]; then
+        sh -c "${Wifi_Module}" > "${Module}"/Wifi_Connect.sh
+        chmod +x "${Module}"/Wifi_Connect.sh
+    elif [ ! -e "${Module}"/setting_xinitrc.sh ]; then
+        sh -c "${Set_X_Module}" > "${Module}"/setting_xinitrc.sh
+        chmod +x "${Module}"/setting_xinitrc.sh
+    elif [ ! -e "${Module}"/useradd.sh ]; then
+        sh -c "${Useradd_Module}" > "${Module}"/useradd.sh
+        chmod +x "${Module}"/useradd.sh
+    fi
+}
 #--函数------检查当前目录有没有mirrorlist.sh文件，没有就导入
 Update_Mirror(){
     if [ ! -e "${Module}"/mirrorlist.sh ]; then
@@ -119,6 +136,7 @@ Update_Mirror(){
         bash "${Module}"/mirrorlist.sh
     fi
 }
+
 #--函数------连接有线网络
 Configure_Ethernet(){
     echo ":: One moment please............"
@@ -126,7 +144,7 @@ Configure_Ethernet(){
     ip link set "${ETHERNET}" up
     ifconfig "${ETHERNET}" up  
     systemctl restart dhcpcd   
-    ping -c 3 auroot.cn  
+    ping -c 3 8.8.8.8 
     sleep 1
 }
 #--函数------开启SSH远程连接
@@ -163,11 +181,26 @@ ConfigurePassworld(){
         echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h} ${g}ID: ${b}${CheckingID}${h}." 
         sleep 2;
     else
-        sh -c "${Useradd_Module}"
+        bash "${Module}"/useradd.sh
         CheckingUsers=$(cat "${Temp_Data}"/UserName)
         echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h}." 
         sleep 2;
     fi
+}
+#--函数------Chroot
+Auin_chroot(){   
+    # rm -rf /mnt/etc/pacman.conf 
+    # rm -rf /mnt/etc/pacman.d/mirrorlist   
+    mkdir /mnt/Auin 2&> ${null} && Ct_log "mkdir /mnt/Auin" 
+    cp -rf "${Temp_Data}" /mnt/Auin 2&> ${null}
+    cp -rf "${Module}" /mnt/Auin 2&> ${null}
+    cat "$0" > /mnt/Auin/auin.sh  && chmod +x /mnt/Auin/auin.sh && Ct_log "cat "$0" > /mnt/Auin/auin.sh  && chmod +x /mnt/Auin/auin.sh"
+    cp -rf "${Module}" /mnt/Auin && Ct_log “cp -rf "${Module}" /mnt/Auin”
+    cat > /mnt/auin.sh << EOF
+#!/bin/bash
+bash /Auin/auin.sh
+EOF
+    arch-chroot /mnt /bin/bash -c "/Auin/auin.sh"
 }
 
 echo " " >> "${Install_Log}"
@@ -176,7 +209,7 @@ echo "Arch_install Script started" >> "${Install_Log}"
 echo "Arch_install 脚本已启动" >> "${Install_Log}"
 # 应用函数  如果觉得每次打开脚本,速度很慢,可以注释下面一行!
 #Down_Update
-
+Update_Module
 #========判断当前模式
 #------因暂时还不知道怎么得知当前是否为Chroot模式，所以必须使用脚本分区后，才知道处于什么模式！
 #------如果是以自行分区，也可以手动在 新系统根目录创建/mnt/diskName_root文件，文件上级目录必须为 /mnt
@@ -299,10 +332,8 @@ if [[ ${principal_variable} == 4 ]];then
     read -p "${READS_C}" tasks
 #
     if [[ ${tasks} == 0 ]];then
-    mkdir /mnt/Auin && Ct_log "mkdir /mnt/Auin"
-    cat "$0" > /mnt/Auin/auin.sh  && chmod +x /mnt/Auin/auin.sh && Ct_log "cat "$0" > /mnt/Auin/auin.sh  && chmod +x /mnt/Auin/auin.sh"
-    cp -rf "${Module}" /mnt/Auin && Ct_log “cp -rf "${Module}" /mnt/Auin”
-    arch-chroot /mnt /bin/bash /mnt/Auin/auin.sh && Ct_log "arch-chroot /mnt /bin/bash /mnt/Auin/auin.sh"
+        Auin_chroot;
+    
     fi
 # list1==========磁盘分区==========11111111111
     if [[ ${tasks} == 1 ]];then
@@ -365,16 +396,15 @@ if [[ ${principal_variable} == 4 ]];then
             lsblk | grep -E "sda|sdb|sdc|sdd|sdg|nvme"  
             echo;
             READDISK_D=$(echo -e "${PSY} ${y}lease select the size of swapfile: ${g}[example:512M-4G ~] ${y}Skip: ${g}[No]${h} ${JHB}")
-            read -p "${READDISK_D}"  DISK_LIST_SWAP     #给用户输入接口
-                DISK_NAMEL_D=$(echo "${DISK_LIST_SWAP}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
-                if [[ ${DISK_NAMEL_D} == "no" ]] ; then    # 如果用户输入no，则跳过swapfile设置
+            read -p "${READDISK_D}"  DISK_LIST_SWAP     #用户输入接口
+                if [[ "${DISK_LIST_SWAP}" == "no" ]] ; then    # 如果用户输入no，则跳过swapfile设置
                     echo -e "${wg} ::==>> Partition complete. ${h}"  
                     sleep 1
                     bash "${0}"
                 fi
-                if $(grep -E "^[0-9]*[A-Z]$" < "${DISK_NAMEL_D}") &> ${null} ; then
-                    echo -e "${PSG} ${g}Assigned Swap file Size: ${DISK_NAMEL_D} .${h}"
-                    fallocate -l "${DISK_NAMEL_D}" /mnt/swapfile && Ct_log "fallocate -l "${DISK_NAMEL_D}" /mnt/swapfile" 
+                if echo ${DISK_LIST_SWAP} | grep -E "^[0-9]*[A-Z]$" &> ${null} ; then
+                    echo -e "${PSG} ${g}Assigned Swap file Size: "${DISK_LIST_SWAP}" .${h}"
+                    fallocate -l "${DISK_LIST_SWAP}" /mnt/swapfile && Ct_log "fallocate -l "${DISK_LIST_SWAP}" /mnt/swapfile" 
                     chmod 600 /mnt/swapfile && Ct_log "chmod 600 /mnt/swapfile"
                     mkswap /mnt/swapfile && Ct_log "mkswap /mnt/swapfile"
                     swapon /mnt/swapfile && Ct_log "swapon /mnt/swapfile"
@@ -406,8 +436,6 @@ if [[ ${principal_variable} == 4 ]];then
             echo -e "${PSG}  ${g}Configure Fstab File.${h}"   #配置Fstab文件
                 genfstab -U /mnt >> /mnt/etc/fstab  && cat /tmp/diskName_root > /mnt/diskName_root
                 Ct_log "genfstab -U /mnt >> /mnt/etc/fstab  && cat /tmp/diskName_root > /mnt/diskName_root"
-            cp -rf "${Install_Log}" /mnt"${Install_Log}"
-            Ct_log "cp -rf "${Install_Log}" /mnt"${Install_Log}""
             sleep 1
             echo;
             echo;
@@ -420,23 +448,9 @@ if [[ ${principal_variable} == 4 ]];then
             echo -e "${wg}#======================================================#${h}"
             sleep 3
             echo    # Chroot到新系统中完成基础配置，第一步配置
-            # rm -rf /mnt/etc/pacman.conf 
-            # rm -rf /mnt/etc/pacman.d/mirrorlist 
-            cp -rf "${Install_Log}" /mnt"${Install_Log}"
-            Ct_log "cp -rf "${Install_Log}" /mnt"${Install_Log}""
-            cp -rf /etc/pacman.conf /mnt/etc/pacman.conf 2&> ${null}
-            Ct_log "cp -rf /etc/pacman.conf /mnt/etc/pacman.conf 2&> ${null}"
-            cp -rf /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist 2&> ${null}
-            Ct_log "cp -rf /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist 2&> ${null}"
-            mkdir /mnt/Auin
-
-            mkdir /mnt/Auin
-            cat "$0" > /mnt/Auin/auin.sh  && chmod +x /mnt/Auin/auin.sh
-            Ct_log "cat "$0" > /mnt/Auin/auin.sh  && chmod +x /mnt/Auin/auin.sh"
-            cp -rf "${Module}" /mnt/Auin 
-            arch-chroot /mnt /bin/bash /mnt/Auin/auin.sh 
-            # cp -rf /etc/pacman.conf.bak /mnt/etc/pacman.conf 2&> ${null}
-            # cp -rf /etc/pacman.d/mirrorlist.bak /mnt/etc/pacman.d/mirrorlist 2&> ${null}
+            cp -rf /etc/pacman.conf /mnt/etc/pacman.conf 
+            cp -rf /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
+            Auin_chroot;
     fi
 # list21------------------------------------------------------------------------------------------------------#
 #==========  Installation Drive. 驱动  ===========3333333333333
@@ -840,3 +854,107 @@ case $principal_variable in
     echo -e "${wg}#----------------------------------#${h}"
     exit 0
 esac
+=$(cat "${Temp_Data}"/UserName)
+            cp -rf /etc/X11/xinit/xinitrc  /home/"${CheckingUser}"/.xinitrc 
+            Ct_log "cp -rf /etc/X11/xinit/xinitrc  /home/"${CheckingUser}"/.xinitrc "
+            echo -e "${PSG} ${w}${DESKTOP_ENVS} ${g}Desktop environment configuration completed.${h}"  
+            sleep 2;   # 以下是配置 ohmyzsh
+            #sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/install_zsh.sh)"
+        } 
+    # 函数 桌面管理选择
+    # 软件包列表 及 读取变量DESKTOP_MANAGER_NAME,安装桌面/显示管理器  
+        Desktop_Manager(){
+            echo "---------------------------------"
+            echo -e "${PSB} ${g}   sddm.     ${h}${w}[1]${h}"  
+            echo -e "${PSB} ${g}   gdm.      ${h}${w}[2]${h}" 
+            echo -e "${PSB} ${g}   lightdm.  ${h}${w}[3]${h}"   
+            echo -e "${PSB} ${g}   lxdm.     ${h}${w}[4]${h}"  
+            echo -e "${PSB} ${g}   default.  ${h}${w}[*]${h}" 
+            echo "---------------------------------"
+            SELECT_DM=$(echo -e "${PSG} ${y} Please select Desktop Manager: ${h} ${JHB}")
+            read -p "${SELECT_DM}" DM_ID
+            case ${DM_ID} in
+                1)
+                    DESKTOP_MANAGER_NAME="sddm"
+                ;;
+                2)
+                    DESKTOP_MANAGER_NAME="gdm"  
+                ;;
+                3)
+                    DESKTOP_MANAGER_NAME="lightdm"
+                ;;
+                4)
+                    DESKTOP_MANAGER_NAME="lxdm"
+                ;;
+                *)
+                    if [[ $DESKTOP_ENVS == "plasma" ]] ; then
+                        DESKTOP_MANAGER_NAME="sddm"
+                    elif [[ $DESKTOP_ENVS == "gnome" ]] ; then
+                        DESKTOP_MANAGER_NAME="gdm"
+                    elif [[ $DESKTOP_ENVS == "deepin" ]] ; then
+                        DESKTOP_MANAGER_NAME="lightdm"
+                    elif [[ $DESKTOP_ENVS == "xfce" ]] ; then
+                        DESKTOP_MANAGER_NAME="lightdm"
+                    elif [[ $DESKTOP_ENVS == "i3wm" ]] ; then
+                        DESKTOP_MANAGER_NAME="sddm"
+                    elif [[ $DESKTOP_ENVS == "lxde" ]] ; then
+                        DESKTOP_MANAGER_NAME="lxdm"
+                    elif [[ $DESKTOP_ENVS == "cinnamon" ]] ; then
+                        DESKTOP_MANAGER_NAME="lightdm"
+                    fi
+                ;;
+            esac
+            echo ${DESKTOP_MANAGER_NAME} > "${Temp_Data}"/Desktop_Manager
+                # IN_SDDM_PKG="sddm sddm-kcm"
+                # IN_GDM_PKG="gdm"
+                # IN_LIGHTDM_PKG="lightdm"
+                # IN_LXDM_PKG="lxdm"
+                Desktop_Manager_ID=$(cat "${Temp_Data}"/Desktop_Manager)
+                if [[ ${Desktop_Manager_ID} == "sddm" ]] ; then
+                    pacman -S sddm sddm-kcm  #--安装SDDM
+                    Ct_log "pacman -S sddm sddm-kcm"
+                    # Desktop_Env_Config      # 环境配置
+                elif [[ ${Desktop_Manager_ID} == "gdm" ]] ; then
+                    pacman -S gdm    #--安装GDM
+                    Ct_log "pacman -S gdm"
+                    # Desktop_Env_Config      # 环境配置
+                elif [[ ${Desktop_Manager_ID} == "lightdm" ]] ; then
+                    pacman -S lightdm   #--安装lightdm
+                    Ct_log "pacman -S lightdm "
+                    # Desktop_Env_Config      # 环境配置
+                elif [[ ${Desktop_Manager_ID} == "lxdm" ]] ; then
+                    pacman -S lxdm  #--安装LXDM
+                    Ct_log "pacman -S lxdm"
+                    # Desktop_Env_Config      # 环境配置
+                fi
+            
+        }
+
+    # 定义 其他基本包函数
+        Programs_Name(){
+            sudo pacman -Sy  ttf-dejavu ttf-liberation thunar neofetch  unrar unzip p7zip \
+                zsh vim git ttf-wps-fonts google-chrome mtpfs mtpaint libmtp kchmviewer file-roller flameshot 
+            Ct_log "sudo pacman -Sy  ttf-dejavu ttf-liberation thunar neofetch  unrar unzip p7zip zsh vim git ttf-wps-fonts google-chrome mtpfs mtpaint libmtp kchmviewer file-roller flameshot"
+        }
+#-----------#---------------------------------------------------------------------------#
+        # 开始安装桌面环境
+        #-----------------------------
+        echo
+        echo -e "     ${w}***${h} ${b}Install Desktop${h} ${w}***${h}  "  
+        echo "---------------------------------"
+        echo -e "${PSB} ${g}   KDE plasma.     ${h}${w}[1]${h}  --sddm"
+        echo -e "${PSB} ${g}   Gnome.          ${h}${w}[2]${h}  --gdm"
+        echo -e "${PSB} ${g}   Deepin.         ${h}${w}[3]${h}  --lightdm"    
+        echo -e "${PSB} ${g}   Xfce4.          ${h}${w}[4]${h}  --lightdm"  
+        echo -e "${PSB} ${g}   i3wm.           ${h}${w}[5]${h}  --sddm"
+        echo -e "${PSB} ${g}   lxde.           ${h}${w}[6]${h}  --lxdm"
+        echo -e "${PSB} ${g}   Cinnamon.       ${h}${w}[7]${h}  --lightdm"
+        echo "---------------------------------"                           
+        echo;
+            CHOICE_ITEM_DESKTOP=$(echo -e "${PSG} ${y} Please select desktop${h} ${JHB}")
+            DESKTOP_ID="0"   # 初始化变量
+            Plasma_pkg="xorg xorg-server xorg-xinit mesa plasma plasma-desktop konsole dolphin kate plasma-pa kio-extras powerdevil kcm-fcitx"
+            Gnome_pkg="xorg xorg-server xorg-xinit mesa gnome gnome-extra gnome-tweaks gnome-shell gnome-shell-extensions gvfs-mtp gvfs gvfs-smb gnome-keyring"
+            Deepin_pkg="xorg xorg-server xorg-xinit mesa deepin deepin-extra lightdm-deepin-greeter"
+            Xfce4_pkg="xorg xorg-server xorg-xinit mesa xfce4 xfce4-goodies light-locker xfce4-power-manager libcanberra"
+            i3wm_pkg="xorg xorg-server xorg-xinit mesa i3 i3-gap
