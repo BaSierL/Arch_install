@@ -10,13 +10,13 @@
 #========变量
 null="/dev/null"
 # 脚本模块位置
-Module="${PWD}/Module"
+Module="./Module"
 # 日志目录 Log Directory
-Temp_Data="${PWD}/Temp_Data"
+Temp_Data="./Temp_Data"
 # Wifi需要的NetworkManager等包定位
-NetworkManager_Pkg="${PWD}/Pkg/NetworkManager"
+NetworkManager_Pkg="./Pkg/NetworkManager"
 # 记录脚本日志的文件地址
-Install_Log="${PWD}/Temp_Data/Arch_install.log"
+Install_Log="./Temp_Data/Arch_install.log"
 # 初始密码
 PASS="123456"
 #------检查必要目录或文件是否存在
@@ -58,10 +58,10 @@ trap 'Ct_log "DO NOT SEND CTRL + C WHEN EXECUTE SCRIPT !!!! "'  2
 # 模块链接
 # Default settings
 Auroot_Git=${Auroot_Git:-https://gitee.com/auroot/Arch_install/raw/master/Module}
-Mirrorlist_Module=${Mirrorlist_Module:-curl -fsSL ${Auroot_Git}/mirrorlist.sh}
-Wifi_Module=${Wifi_Module:-curl -fsSL ${Auroot_Git}/Wifi_Connect.sh}
-Set_X_Module=${Set_X_Module:-curl -fsSL ${Auroot_Git}/setting_xinitrc.sh}
-Useradd_Module=${Useradd_Module:-curl -fsSL ${Auroot_Git}/useradd.sh}
+Mirrorlist_Module=${Mirrorlist_Module:-${Auroot_Git}/mirrorlist.sh}
+Wifi_Module=${Wifi_Module:-${Auroot_Git}/Wifi_Connect.sh}
+Set_X_Module=${Set_X_Module:-${Auroot_Git}/setting_xinitrc.sh}
+Useradd_Module=${Useradd_Module:-${Auroot_Git}/useradd.sh}
 # Log_Module=${Log_Module:-curl -fsSL ${Auroot_Git}/log.sh}
 
 
@@ -112,28 +112,20 @@ PSY=$(echo -e "${y} ::==>${h}")
 #--函数------检查必要文件是否存在
 Update_Module(){
     if [ ! -e ${Module}/mirrorlist.sh ]; then
-        sh -c "${Mirrorlist_Module}" > ${Module}/mirrorlist.sh  
+        curl -fsSL ${Auroot_Git}/mirrorlist.sh > ${Module}/mirrorlist.sh  
         chmod +x ${Module}/mirrorlist.sh
-    elif [ ! -e "${Module}"/Wifi_Connect.sh ]; then
-        sh -c "${Wifi_Module}" > "${Module}"/Wifi_Connect.sh
-        chmod +x "${Module}"/Wifi_Connect.sh
-    elif [ ! -e "${Module}"/setting_xinitrc.sh ]; then
-        sh -c "${Set_X_Module}" > "${Module}"/setting_xinitrc.sh
-        chmod +x "${Module}"/setting_xinitrc.sh
-    elif [ ! -e ${Module}/useradd.sh ]; then
-        sh -c "${Useradd_Module}" > ${Module}/useradd.sh
-        chmod +x ${Module}/useradd.sh
     fi
-}
-#--函数------检查当前目录有没有mirrorlist.sh文件，没有就导入
-Update_Mirror(){
-    if [ ! -e ${Module}/mirrorlist.sh ]; then
-        sh -c "${Mirrorlist_Module}"  > ${Module}/mirrorlist.sh  
-        chmod +x ${Module}/mirrorlist.sh
-        bash ${Module}/mirrorlist.sh
-    else
-        chmod +x ${Module}/mirrorlist.sh
-        bash ${Module}/mirrorlist.sh
+    if [ ! -e ${Module}/Wifi_Connect.sh ]; then
+        curl -fsSL ${Auroot_Git}/Wifi_Connect.sh > ${Module}/Wifi_Connect.sh
+        chmod +x ${Module}/Wifi_Connect.sh
+    fi
+    if [ ! -e ${Module}/setting_xinitrc.sh ]; then
+        curl -fsSL ${Auroot_Git}/setting_xinitrc.sh > ${Module}/setting_xinitrc.sh
+        chmod +x ${Module}/setting_xinitrc.sh
+    fi
+    if [ ! -e ${Module}/useradd.sh ]; then
+        curl -fsSL ${Auroot_Git}/useradd.sh > ${Module}/useradd.sh
+        chmod +x ${Module}/useradd.sh
     fi
 }
 
@@ -164,7 +156,7 @@ Open_SSH(){
 #--函数------设置root密码 用户  判断/etc/passwd文件中最后一个用户是否大于等于1000的普通用户，如果没有请先创建用户
 ConfigurePassworld(){
     PasswdFile="/etc/passwd"
-    if [ -e "${Temp_Data}"/UserName ]; then   #  设定一个文件匹配，这个文件在不在都无所谓
+    if [ -e ${Temp_Data}/UserName ]; then   #  设定一个文件匹配，这个文件在不在都无所谓
         for ((Number=1;Number<=50;Number++))  # 设置变量Number 等于1 ；小于等于50 ； Number 1+1直到50
         do
         Query=$(tail -n "${Number}" "${PasswdFile}" | head -n 1 | cut -d":" -f3)
@@ -176,13 +168,11 @@ ConfigurePassworld(){
                 fi
             done 
         done
-        echo "$CheckingUsers" > "${Temp_Data}"/UserName 
-        CheckingUsers=$(cat "${Temp_Data}"/UserName)
+        echo "$CheckingUsers" > ${Temp_Data}/UserName 
         echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h} ${g}ID: ${b}${CheckingID}${h}." 
         sleep 2;
     else
         bash ${Module}/useradd.sh
-        CheckingUsers=$(cat "${Temp_Data}"/UserName)
         echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h}." 
         sleep 2;
     fi
@@ -191,22 +181,16 @@ ConfigurePassworld(){
 Auin_chroot(){   
     # rm -rf /mnt/etc/pacman.conf 
     # rm -rf /mnt/etc/pacman.d/mirrorlist   
-    mkdir /mnt/Auin 2&> ${null} && Ct_log "mkdir /mnt/Auin" 
-    cp -rf "${Temp_Data}" /mnt/Auin 2&> ${null}
-    cp -rf "${Module}" /mnt/Auin 2&> ${null}
-    cat "$0" > /mnt/Auin/auin.sh  && chmod +x /mnt/Auin/auin.sh && Ct_log "cat "$0" > /mnt/Auin/auin.sh  && chmod +x /mnt/Auin/auin.sh"
-    cp -rf "${Module}" /mnt/Auin && Ct_log “cp -rf "${Module}" /mnt/Auin”
-    cat > /mnt/auin.sh << EOF
-#!/bin/bash
-bash /Auin/auin.sh
-EOF
-    arch-chroot /mnt /bin/bash -c "/Auin/auin.sh"
+    cp -rf ${Temp_Data} /mnt 2&> ${null}
+    cp -rf ${Module} /mnt 2&> ${null}
+    cat "$0" > /mnt/auin.sh  && chmod +x /mnt/auin.sh && Ct_log "cat "$0" > /mnt/auin.sh  && chmod +x /mnt/auin.sh"
+    cp -rf ${Module} /mnt && Ct_log “cp -rf ${Module} /mnt”
+    arch-chroot /mnt /bin/bash -c "/auin.sh"
 }
 
 echo " " >> "${Install_Log}"
 date -d "2 second" +"%Y-%m-%d %H:%M:%S" &>> "${Install_Log}"
 echo "Arch_install Script started" >> "${Install_Log}"
-echo "Arch_install 脚本已启动" >> "${Install_Log}"
 # 应用函数  如果觉得每次打开脚本,速度很慢,可以注释下面一行!
 #Down_Update
 Update_Module
@@ -224,7 +208,7 @@ case ${1} in
         exit 0;
     ;;
     -w | --cwifi)
-        bash "${Module}"/Wifi_Connect.sh ${NetworkManager_Pkg} "${Temp_Data}"
+        bash ${Module}/Wifi_Connect.sh ${NetworkManager_Pkg} "${Temp_Data}"
         exit 0;
     ;;
     -s | --openssh)
@@ -283,7 +267,7 @@ READS_A=$(echo -e "${PSG} ${y}What are the tasks[1,2,3..]${h} ${JHB}")
 read -p "${READS_A}" principal_variable 
 #========ArchLinux Mirrorlist 配置镜像源  1 
 if [[ ${principal_variable} = 1 ]]; then
-    Update_Mirror;
+    bash ${Module}/mirrorlist.sh
 fi
 #========检查网络  2
 if [[ ${principal_variable} = 2 ]]; then
@@ -300,7 +284,7 @@ if [[ ${principal_variable} = 2 ]]; then
                 Configure_Ethernet      
             ;;
             2) 
-                bash "${Module}"/Wifi_Connect.sh ${NetworkManager_Pkg} "${Temp_Data}" && Ct_log "bash "${Module}"/Wifi_Connect.sh ${NetworkManager_Pkg} "${Temp_Data}""
+                bash ${Module}/Wifi_Connect.sh ${NetworkManager_Pkg} "${Temp_Data}" && Ct_log "bash ${Module}/Wifi_Connect.sh ${NetworkManager_Pkg} "${Temp_Data}""
             ;;
             3) 
                 bash "${0}"
@@ -346,7 +330,7 @@ if [[ ${principal_variable} == 4 ]];then
         read -p "${READDISK_A}"  DISKS_ID  #给用户输入接口
             DISK_NAMEL_A=$(echo "${DISKS_ID}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
             if echo "$DISK_NAMEL_A" |  grep -E "^[a-z]" &> ${null} ; then
-                cfdisk /dev/"${DISK_NAMEL_A}"  && echo "/dev/${DISK_NAMEL_A}" > /tmp/diskName_root && Ct_log "cfdisk /dev/"${DISK_NAMEL_A}"  && echo "/dev/${DISK_NAMEL_A}" > /tmp/diskName_root"
+                cfdisk /dev/${DISK_NAMEL_A}  && echo "/dev/${DISK_NAMEL_A}" > /tmp/diskName_root && Ct_log "cfdisk /dev/"${DISK_NAMEL_A}"  && echo "/dev/${DISK_NAMEL_A}" > /tmp/diskName_root"
             else
                 echo;
                 echo;
@@ -363,10 +347,9 @@ if [[ ${principal_variable} == 4 ]];then
             read -p "${READDISK_B}"  DISK_LIST_ROOT   #给用户输入接口
                 DISK_NAMEL_B=$(echo "${DISK_LIST_ROOT}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
                 if echo "${DISK_NAMEL_B}" | grep -E "^[a-z]" &> ${null} ; then
-                    mkfs.ext4 /dev/"${DISK_NAMEL_B}" && Ct_log "mkfs.ext4 /dev/"${DISK_NAMEL_B}""  
-                    mount /dev/"${DISK_NAMEL_B}" /mnt && Ct_log "mount /dev/"${DISK_NAMEL_B}" /mnt"
+                    mkfs.ext4 /dev/${DISK_NAMEL_B} && Ct_log "mkfs.ext4 /dev/${DISK_NAMEL_B}"  
+                    mount /dev/${DISK_NAMEL_B} /mnt && Ct_log "mount /dev/"${DISK_NAMEL_B}" /mnt"
                     ls /sys/firmware/efi/efivars &> ${null} && mkdir -p /mnt/boot/efi || mkdir -p /mnt/boot && Ct_log "ls /sys/firmware/efi/efivars &> ${null} && mkdir -p /mnt/boot/efi || mkdir -p /mnt/boot"
-                    mkdir /mnt/Auin && Ct_log "mkdir /mnt/Auin"
                     cat /tmp/diskName_root > /mnt/diskName_root && Ct_log "cat /tmp/diskName_root > /mnt/diskName_root"
                 else
                     echo;
@@ -382,9 +365,9 @@ if [[ ${principal_variable} == 4 ]];then
             read -p "${READDISK_C}"  DISK_LIST_GRUB   #给用户输入接口
                 DISK_NAMEL_C=$(echo "${DISK_LIST_GRUB}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
                 if echo "${DISK_NAMEL_C}" | grep -E "^[a-z]" &> ${null} ; then
-                    mkfs.vfat /dev/"${DISK_NAMEL_C}" && Ct_log "mkfs.vfat /dev/"${DISK_NAMEL_C}""  
-                    ls /sys/firmware/efi/efivars &> ${null} && mount /dev/"${DISK_NAMEL_C}" /mnt/boot/efi || mount /dev/${DISK_NAMEL_C} /mnt/boot 
-                    Ct_log "ls /sys/firmware/efi/efivars &> ${null} && mount /dev/"${DISK_NAMEL_C}" /mnt/boot/efi || mount /dev/${DISK_NAMEL_C} /mnt/boot"
+                    mkfs.vfat /dev/${DISK_NAMEL_C} && Ct_log "mkfs.vfat /dev/"${DISK_NAMEL_C}""  
+                    ls /sys/firmware/efi/efivars &> ${null} && mount /dev/${DISK_NAMEL_C} /mnt/boot/efi || mount /dev/${DISK_NAMEL_C} /mnt/boot 
+                    Ct_log "ls /sys/firmware/efi/efivars &> ${null} && mount /dev/${DISK_NAMEL_C} /mnt/boot/efi || mount /dev/${DISK_NAMEL_C} /mnt/boot"
                 else
                     echo;
                     echo -e "${r} ==>> [EFI] Error: Please input: /dev/sdX[0-9] | sdX[0-9] !!! ${h}"  
@@ -522,13 +505,12 @@ if [[ ${principal_variable} == 4 ]];then
         bash ${Module}/mirrorlist.sh
         # 定义 桌面环境配置函数
         Desktop_Env_Config(){
-            systemctl enable < "${Temp_Data}"/Desktop_Manager 
-            Ct_log "systemctl enable < "${Temp_Data}"/Desktop_Manager " 
-            sh -c "${Set_X_Module}"
+            systemctl enable ${DESKTOP_MANAGER_NAME} 
+            Ct_log "systemctl enable ${DESKTOP_MANAGER_NAME}" 
+            bash ${Module}/setting_xinitrc.sh
             echo "exec ${DESKTOP_XINIT}" >> /etc/X11/xinit/xinitrc 
-            CheckingUser=$(cat "${Temp_Data}"/UserName)
-            cp -rf /etc/X11/xinit/xinitrc  /home/"${CheckingUser}"/.xinitrc 
-            Ct_log "cp -rf /etc/X11/xinit/xinitrc  /home/"${CheckingUser}"/.xinitrc "
+            cp -rf /etc/X11/xinit/xinitrc  /home/${CheckingUsers}/.xinitrc 
+            Ct_log "cp -rf /etc/X11/xinit/xinitrc  /home/${CheckingUsers}/.xinitrc "
             echo -e "${PSG} ${w}${DESKTOP_ENVS} ${g}Desktop environment configuration completed.${h}"  
             sleep 2;   # 以下是配置 ohmyzsh
             #sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/install_zsh.sh)"
@@ -576,25 +558,24 @@ if [[ ${principal_variable} == 4 ]];then
                     fi
                 ;;
             esac
-            echo ${DESKTOP_MANAGER_NAME} > "${Temp_Data}"/Desktop_Manager
+            echo ${DESKTOP_MANAGER_NAME} > ${Temp_Data}/Desktop_Manager
                 # IN_SDDM_PKG="sddm sddm-kcm"
                 # IN_GDM_PKG="gdm"
                 # IN_LIGHTDM_PKG="lightdm"
                 # IN_LXDM_PKG="lxdm"
-                Desktop_Manager_ID=$(cat "${Temp_Data}"/Desktop_Manager)
-                if [[ ${Desktop_Manager_ID} == "sddm" ]] ; then
+                if [[ ${DESKTOP_MANAGER_NAME} == "sddm" ]] ; then
                     pacman -S sddm sddm-kcm  #--安装SDDM
                     Ct_log "pacman -S sddm sddm-kcm"
                     # Desktop_Env_Config      # 环境配置
-                elif [[ ${Desktop_Manager_ID} == "gdm" ]] ; then
+                elif [[ ${DESKTOP_MANAGER_NAME} == "gdm" ]] ; then
                     pacman -S gdm    #--安装GDM
                     Ct_log "pacman -S gdm"
                     # Desktop_Env_Config      # 环境配置
-                elif [[ ${Desktop_Manager_ID} == "lightdm" ]] ; then
+                elif [[ ${DESKTOP_MANAGER_NAME} == "lightdm" ]] ; then
                     pacman -S lightdm   #--安装lightdm
                     Ct_log "pacman -S lightdm "
                     # Desktop_Env_Config      # 环境配置
-                elif [[ ${Desktop_Manager_ID} == "lxdm" ]] ; then
+                elif [[ ${DESKTOP_MANAGER_NAME} == "lxdm" ]] ; then
                     pacman -S lxdm  #--安装LXDM
                     Ct_log "pacman -S lxdm"
                     # Desktop_Env_Config      # 环境配置
@@ -637,39 +618,37 @@ if [[ ${principal_variable} == 4 ]];then
                 1)
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                     sleep 1;
+                    DESKTOP_ENVS="plasma"       # 桌面名
+                    DESKTOP_XINIT="startkde"    # 桌面环境启动
                     pacman -Sy ${Plasma_pkg}
                     Ct_log "${Plasma_pkg}"
                     Programs_Name               # 安装其他基本包
                     Desktop_Manager      # 选择桌面管理器
-                    DESKTOP_ENVS="plasma"       # 桌面名
-                    DESKTOP_XINIT="startkde"    # 桌面环境启动 
                     Desktop_Env_Config          # 环境配置
-                    
                     #-------------------------------------------------------------------------------# 
                 ;;
                 2)
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                     sleep 1;
+                    DESKTOP_ENVS="gnome"            # 桌面名
+                    DESKTOP_XINIT="gnome=session"   # 桌面环境启动
                     pacman -Sy ${Gnome_pkg}
                     Ct_log "pacman -Sy ${Gnome_pkg}"
                     Programs_Name                   # 安装其他基本包
                     Desktop_Manager      # 选择桌面管理器
-                    DESKTOP_ENVS="gnome"            # 桌面名
-                    DESKTOP_XINIT="gnome=session"   # 桌面环境启动
                     Desktop_Env_Config              # 环境配置
-                    
                     #-------------------------------------------------------------------------------#
                 ;;
                 3)
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                     sleep 1;
+                    DESKTOP_ENVS="deepin"      # 桌面名
+                    DESKTOP_XINIT="startdde"   # 桌面环境启动
                     pacman -Sy ${Deepin_pkg}      
                     Ct_log "pacman -Sy ${Deepin_pkg}"                      
                     Programs_Name              # 安装其他基本包
-                    Desktop_Manager      # 选择桌面管理器
+                    Desktop_Manager            # 选择桌面管理器
                     sed -i 's/greeter-session=example-gtk-gnome/greeter-session=lightdm-deepin-greeter/'  /etc/lightdm/lightdm.conf
-                    DESKTOP_ENVS="deepin"      # 桌面名
-                    DESKTOP_XINIT="startdde"   # 桌面环境启动
                     Desktop_Env_Config         # 环境配置
                     
                     #-------------------------------------------------------------------------------#
@@ -677,12 +656,12 @@ if [[ ${principal_variable} == 4 ]];then
                 4)
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                     sleep 1;
+                    DESKTOP_ENVS="xfce"         # 桌面名
+                    DESKTOP_XINIT="startxfce4"  # 桌面环境启动
                     pacman -Sy ${Xfce4_pkg}
                     Ct_log "pacman -Sy ${Xfce4_pkg}"
                     Programs_Name               # 安装其他基本包
-                    Desktop_Manager      # 选择桌面管理器
-                    DESKTOP_ENVS="xfce"         # 桌面名
-                    DESKTOP_XINIT="startxfce4"  # 桌面环境启动
+                    Desktop_Manager             # 选择桌面管理器
                     Desktop_Env_Config          # 环境配置
                     
                     #-------------------------------------------------------------------------------#
@@ -690,48 +669,44 @@ if [[ ${principal_variable} == 4 ]];then
                 5)
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                     sleep 1; 
-                    pacman -Sy ${i3wm_pkg}
-                    Ct_log "pacman -Sy ${i3wm_pkg}" 
-                    sed -i 's/i3-sensible-terminal/--no-startup-id termite/g' /home/"${CheckingUser}"/.config/i3/config  # 更改终端
-                    Programs_Name           # 安装其他基本包
-                    Desktop_Manager      # 选择桌面管理器
                     DESKTOP_ENVS="i3wm"     # 桌面名
                     DESKTOP_XINIT="i3"      # 桌面环境启动
+                    pacman -Sy ${i3wm_pkg}
+                    Ct_log "pacman -Sy ${i3wm_pkg}" 
+                    sed -i 's/i3-sensible-terminal/--no-startup-id termite/g' /home/"${CheckingUsers}"/.config/i3/config  # 更改终端
+                    Programs_Name           # 安装其他基本包
+                    Desktop_Manager         # 选择桌面管理器
                     Desktop_Env_Config      # 环境配置
-                    
                     #-------------------------------------------------------------------------------#  
                 ;;
                 6)
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                     sleep 1; 
+                    DESKTOP_ENVS="lxde"         # 桌面名
+                    DESKTOP_XINIT="startlxde"   # 桌面环境启动
                     pacman -Sy ${lxde_pkg}
                     Ct_log "pacman -Sy ${lxde_pkg}"
                     Programs_Name               # 安装其他基本包
                     Desktop_Manager      # 选择桌面管理器
-                    DESKTOP_ENVS="lxde"         # 桌面名
-                    DESKTOP_XINIT="startlxde"   # 桌面环境启动
                     Desktop_Env_Config          # 环境配置
-                    
                 #-------------------------------------------------------------------------------#  
                 ;;
                 7)
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}" 
                     sleep 1; 
+                    DESKTOP_ENVS="cinnamon"     # 桌面名
+                    DESKTOP_XINIT="cinnamon-session"      # 桌面环境启动
                     pacman -Sy ${Cinnamon_pkg}
                     Ct_log "pacman -Sy ${Cinnamon_pkg}"
                     Programs_Name               # 安装其他基本包
                     Desktop_Manager      # 选择桌面管理器
-                    DESKTOP_ENVS="cinnamon"     # 桌面名
-                    DESKTOP_XINIT="cinnamon-session"      # 桌面环境启动
                     DSnapshot 5esktop_Env_Config      # 环境配置
-                    
                 #-------------------------------------------------------------------------------#  
                 ;;
                 *)
                     echo -e "${PSR} ${r} Selection error.${h}"    
                     exit 26
                 esac
-             
             #-------------------------------------------------------------------------------#     
             READDRIVE_CommonDrive=$(echo -e "${PSG} ${y}Whether to install Common Drivers: Install[y] No[*]${h} ${JHB}")
             read -p "${READDRIVE_CommonDrive}" CommonDrive
@@ -844,7 +819,7 @@ if [[ ${principal_variable} == 4 ]];then
         sleep 3
     fi
 fi
-# 安装ArchLinux  选项4
+# 安装ArchLinux    选项4
 ##========退出 EXIT
 case $principal_variable in
     q | Q | quit | QUIT)
