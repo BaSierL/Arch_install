@@ -70,6 +70,7 @@ QQ/微信: 2763833502
      - -L    查看日志
      - -h    帮助
      - -v    版本
+ 4. 解决了Nvme固态硬盘无法匹配的问题；
 
 ![输入图片说明](https://images.gitee.com/uploads/images/2020/0323/143132_e370a19e_5700645.jpeg)
 
