@@ -111,29 +111,29 @@ PSY=$(echo -e "${y} ::==>${h}")
 
 #--函数------检查必要文件是否存在
 Update_Module(){
-    if [ ! -e "${Module}"/mirrorlist.sh ]; then
-        sh -c "${Mirrorlist_Module}" > "${Module}"/mirrorlist.sh  
-        chmod +x "${Module}"/mirrorlist.sh
+    if [ ! -e ${Module}/mirrorlist.sh ]; then
+        sh -c "${Mirrorlist_Module}" > ${Module}/mirrorlist.sh  
+        chmod +x ${Module}/mirrorlist.sh
     elif [ ! -e "${Module}"/Wifi_Connect.sh ]; then
         sh -c "${Wifi_Module}" > "${Module}"/Wifi_Connect.sh
         chmod +x "${Module}"/Wifi_Connect.sh
     elif [ ! -e "${Module}"/setting_xinitrc.sh ]; then
         sh -c "${Set_X_Module}" > "${Module}"/setting_xinitrc.sh
         chmod +x "${Module}"/setting_xinitrc.sh
-    elif [ ! -e "${Module}"/useradd.sh ]; then
-        sh -c "${Useradd_Module}" > "${Module}"/useradd.sh
-        chmod +x "${Module}"/useradd.sh
+    elif [ ! -e ${Module}/useradd.sh ]; then
+        sh -c "${Useradd_Module}" > ${Module}/useradd.sh
+        chmod +x ${Module}/useradd.sh
     fi
 }
 #--函数------检查当前目录有没有mirrorlist.sh文件，没有就导入
 Update_Mirror(){
-    if [ ! -e "${Module}"/mirrorlist.sh ]; then
-        sh -c "${Mirrorlist_Module}"  > "${Module}"/mirrorlist.sh  
-        chmod +x "${Module}"/mirrorlist.sh
-        bash "${Module}"/mirrorlist.sh
+    if [ ! -e ${Module}/mirrorlist.sh ]; then
+        sh -c "${Mirrorlist_Module}"  > ${Module}/mirrorlist.sh  
+        chmod +x ${Module}/mirrorlist.sh
+        bash ${Module}/mirrorlist.sh
     else
-        chmod +x "${Module}"/mirrorlist.sh
-        bash "${Module}"/mirrorlist.sh
+        chmod +x ${Module}/mirrorlist.sh
+        bash ${Module}/mirrorlist.sh
     fi
 }
 
@@ -181,7 +181,7 @@ ConfigurePassworld(){
         echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h} ${g}ID: ${b}${CheckingID}${h}." 
         sleep 2;
     else
-        bash "${Module}"/useradd.sh
+        bash ${Module}/useradd.sh
         CheckingUsers=$(cat "${Temp_Data}"/UserName)
         echo -e "${PSG} ${g}A normal user already exists, The UserName:${h} ${b}${CheckingUsers}${h}." 
         sleep 2;
@@ -220,7 +220,7 @@ else
 fi
 case ${1} in
     -m | --mirror)
-        bash "${Module}"/mirrorlist.sh
+        bash ${Module}/mirrorlist.sh
         exit 0;
     ;;
     -w | --cwifi)
@@ -458,7 +458,7 @@ if [[ ${principal_variable} == 4 ]];then
         #---------------------------------------------------------------------------#
         #  配置驱动
         #-------------------
-        bash "${Module}"/mirrorlist.sh && Ct_log "bash "${Module}"/mirrorlist.sh"
+        bash ${Module}/mirrorlist.sh && Ct_log "bash ${Module}/mirrorlist.sh"
         #安装声音软件包
         echo -e "${PSG} ${g}Installing Audio driver.${h}"  
         pacman -Sy --needed alsa-utils pulseaudio pulseaudio-bluetooth pulseaudio-alsa  
@@ -519,7 +519,7 @@ if [[ ${principal_variable} == 4 ]];then
 # list22==========  Installation Desktop. 桌面环境 ==========444444444444444444444444444
     if [[ ${tasks} == 22 ]];then
         ConfigurePassworld    # 引用函数：设置密码
-        bash "${Module}"/mirrorlist.sh
+        bash ${Module}/mirrorlist.sh
         # 定义 桌面环境配置函数
         Desktop_Env_Config(){
             systemctl enable < "${Temp_Data}"/Desktop_Manager 
@@ -637,8 +637,8 @@ if [[ ${principal_variable} == 4 ]];then
                 1)
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                     sleep 1;
-                    pacman -Sy "${Plasma_pkg}"
-                    Ct_log "pacman -Sy xorg xorg-server xorg-xinit mesa plasma plasma-desktop konsole dolphin kate plasma-pa kio-extras powerdevil kcm-fcitx"
+                    pacman -Sy ${Plasma_pkg}
+                    Ct_log "${Plasma_pkg}"
                     Programs_Name               # 安装其他基本包
                     Desktop_Manager      # 选择桌面管理器
                     DESKTOP_ENVS="plasma"       # 桌面名
@@ -650,8 +650,8 @@ if [[ ${principal_variable} == 4 ]];then
                 2)
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                     sleep 1;
-                    pacman -Sy "${Gnome_pkg}"
-                    Ct_log "pacman -Sy "${Gnome_pkg}"" 
+                    pacman -Sy ${Gnome_pkg}
+                    Ct_log "pacman -Sy ${Gnome_pkg}"
                     Programs_Name                   # 安装其他基本包
                     Desktop_Manager      # 选择桌面管理器
                     DESKTOP_ENVS="gnome"            # 桌面名
@@ -663,8 +663,8 @@ if [[ ${principal_variable} == 4 ]];then
                 3)
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                     sleep 1;
-                    pacman -Sy "${Deepin_pkg}"       
-                    Ct_log "pacman -Sy "${Deepin_pkg}""                       
+                    pacman -Sy ${Deepin_pkg}      
+                    Ct_log "pacman -Sy ${Deepin_pkg}"                      
                     Programs_Name              # 安装其他基本包
                     Desktop_Manager      # 选择桌面管理器
                     sed -i 's/greeter-session=example-gtk-gnome/greeter-session=lightdm-deepin-greeter/'  /etc/lightdm/lightdm.conf
@@ -677,8 +677,8 @@ if [[ ${principal_variable} == 4 ]];then
                 4)
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                     sleep 1;
-                    pacman -Sy "${Xfce4_pkg}"
-                    Ct_log "pacman -Sy "${Xfce4_pkg}""  
+                    pacman -Sy ${Xfce4_pkg}
+                    Ct_log "pacman -Sy ${Xfce4_pkg}"
                     Programs_Name               # 安装其他基本包
                     Desktop_Manager      # 选择桌面管理器
                     DESKTOP_ENVS="xfce"         # 桌面名
@@ -690,8 +690,8 @@ if [[ ${principal_variable} == 4 ]];then
                 5)
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                     sleep 1; 
-                    pacman -Sy "${i3wm_pkg}"
-                    Ct_log "pacman -Sy "${i3wm_pkg}""  
+                    pacman -Sy ${i3wm_pkg}
+                    Ct_log "pacman -Sy ${i3wm_pkg}" 
                     sed -i 's/i3-sensible-terminal/--no-startup-id termite/g' /home/"${CheckingUser}"/.config/i3/config  # 更改终端
                     Programs_Name           # 安装其他基本包
                     Desktop_Manager      # 选择桌面管理器
@@ -704,8 +704,8 @@ if [[ ${principal_variable} == 4 ]];then
                 6)
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
                     sleep 1; 
-                    pacman -Sy "${lxde_pkg}"
-                    Ct_log "pacman -Sy "${lxde_pkg}""
+                    pacman -Sy ${lxde_pkg}
+                    Ct_log "pacman -Sy ${lxde_pkg}"
                     Programs_Name               # 安装其他基本包
                     Desktop_Manager      # 选择桌面管理器
                     DESKTOP_ENVS="lxde"         # 桌面名
@@ -717,8 +717,8 @@ if [[ ${principal_variable} == 4 ]];then
                 7)
                     echo -e "${PSG} ${g}Configuring desktop environment.${h}" 
                     sleep 1; 
-                    pacman -Sy "${Cinnamon_pkg}"
-                    Ct_log "pacman -Sy "${Cinnamon_pkg}""
+                    pacman -Sy ${Cinnamon_pkg}
+                    Ct_log "pacman -Sy ${Cinnamon_pkg}"
                     Programs_Name               # 安装其他基本包
                     Desktop_Manager      # 选择桌面管理器
                     DESKTOP_ENVS="cinnamon"     # 桌面名
@@ -763,7 +763,7 @@ if [[ ${principal_variable} == 4 ]];then
 
     if [[ ${tasks} == 23 ]];then
             echo;
-            bash "${Module}"/mirrorlist.sh
+            bash ${Module}/mirrorlist.sh
             echo -e "${wg}Installing grub tools.${h}"  #安装grub工具   UEFI与Boot传统模式判断方式：ls /sys/firmware/efi/efivars  Boot引导判断磁盘地址：cat /mnt/diskName_root
                 if ls /sys/firmware/efi/efivars &> /dev/null ; then    # 判断文件是否存在，存在为真，执行EFI，否则执行 Boot
                     #-------------------------------------------------------------------------------#   
