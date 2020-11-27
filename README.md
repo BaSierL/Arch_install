@@ -20,7 +20,9 @@
 使用`curl` 下载`auin.sh` 其他脚本我会内置到主体Script中，可以大大缩短你的安装时间：
 
 ```Shell
-curl -fsSL ****  #缩短后地地址
+wget http://auroot.cn/auin.sh 
+
+curl -fsSL http://auroot.cn/auin.sh > auin.sh #缩短后地地址
 ```
 
 ```Shell
