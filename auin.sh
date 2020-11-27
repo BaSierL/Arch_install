@@ -844,7 +844,7 @@ if [[ ${principal_variable} == 4 ]];then
         sleep 3
     fi
 fi
-# 安装ArchLinux    选项4
+# 安装ArchLinux  选项4
 ##========退出 EXIT
 case $principal_variable in
     q | Q | quit | QUIT)
