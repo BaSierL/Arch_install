@@ -362,7 +362,7 @@ if [[ ${principal_variable} == 4 ]];then
             READDISK_B=$(echo -e "${PSY} ${y}Choose your root[/] partition: ${g}/dev/sdX[0-9] | sdX[0-9] ${h}${JHB}")
             read -p "${READDISK_B}"  DISK_LIST_ROOT   #给用户输入接口
                 DISK_NAMEL_B=$(echo "${DISK_LIST_ROOT}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
-                if echo "${DISK_NAMEL_B}" | grep -E "^[a-z]*[0-9]$" &> ${null} ; then
+                if echo "${DISK_NAMEL_B}" | grep -E "^[a-z]" &> ${null} ; then
                     mkfs.ext4 /dev/"${DISK_NAMEL_B}" && Ct_log "mkfs.ext4 /dev/"${DISK_NAMEL_B}""  
                     mount /dev/"${DISK_NAMEL_B}" /mnt && Ct_log "mount /dev/"${DISK_NAMEL_B}" /mnt"
                     ls /sys/firmware/efi/efivars &> ${null} && mkdir -p /mnt/boot/efi || mkdir -p /mnt/boot && Ct_log "ls /sys/firmware/efi/efivars &> ${null} && mkdir -p /mnt/boot/efi || mkdir -p /mnt/boot"
@@ -381,7 +381,7 @@ if [[ ${principal_variable} == 4 ]];then
             READDISK_C=$(echo -e "${PSY} ${y}Choose your EFI / BOOT partition: ${g}/dev/sdX[0-9] | sdX[0-9] ${h}${JHB}")
             read -p "${READDISK_C}"  DISK_LIST_GRUB   #给用户输入接口
                 DISK_NAMEL_C=$(echo "${DISK_LIST_GRUB}" |  cut -d"/" -f3)   #设置输入”/dev/sda” 或 “sda” 都输出为 sda
-                if echo "${DISK_NAMEL_C}" | grep -E "^[a-z]*[0-9]$" &> ${null} ; then
+                if echo "${DISK_NAMEL_C}" | grep -E "^[a-z]" &> ${null} ; then
                     mkfs.vfat /dev/"${DISK_NAMEL_C}" && Ct_log "mkfs.vfat /dev/"${DISK_NAMEL_C}""  
                     ls /sys/firmware/efi/efivars &> ${null} && mount /dev/"${DISK_NAMEL_C}" /mnt/boot/efi || mount /dev/${DISK_NAMEL_C} /mnt/boot 
                     Ct_log "ls /sys/firmware/efi/efivars &> ${null} && mount /dev/"${DISK_NAMEL_C}" /mnt/boot/efi || mount /dev/${DISK_NAMEL_C} /mnt/boot"
@@ -854,107 +854,3 @@ case $principal_variable in
     echo -e "${wg}#----------------------------------#${h}"
     exit 0
 esac
-=$(cat "${Temp_Data}"/UserName)
-            cp -rf /etc/X11/xinit/xinitrc  /home/"${CheckingUser}"/.xinitrc 
-            Ct_log "cp -rf /etc/X11/xinit/xinitrc  /home/"${CheckingUser}"/.xinitrc "
-            echo -e "${PSG} ${w}${DESKTOP_ENVS} ${g}Desktop environment configuration completed.${h}"  
-            sleep 2;   # 以下是配置 ohmyzsh
-            #sh -c "$(curl -fsSL https://gitee.com/auroot/Arch_install/raw/master/install_zsh.sh)"
-        } 
-    # 函数 桌面管理选择
-    # 软件包列表 及 读取变量DESKTOP_MANAGER_NAME,安装桌面/显示管理器  
-        Desktop_Manager(){
-            echo "---------------------------------"
-            echo -e "${PSB} ${g}   sddm.     ${h}${w}[1]${h}"  
-            echo -e "${PSB} ${g}   gdm.      ${h}${w}[2]${h}" 
-            echo -e "${PSB} ${g}   lightdm.  ${h}${w}[3]${h}"   
-            echo -e "${PSB} ${g}   lxdm.     ${h}${w}[4]${h}"  
-            echo -e "${PSB} ${g}   default.  ${h}${w}[*]${h}" 
-            echo "---------------------------------"
-            SELECT_DM=$(echo -e "${PSG} ${y} Please select Desktop Manager: ${h} ${JHB}")
-            read -p "${SELECT_DM}" DM_ID
-            case ${DM_ID} in
-                1)
-                    DESKTOP_MANAGER_NAME="sddm"
-                ;;
-                2)
-                    DESKTOP_MANAGER_NAME="gdm"  
-                ;;
-                3)
-                    DESKTOP_MANAGER_NAME="lightdm"
-                ;;
-                4)
-                    DESKTOP_MANAGER_NAME="lxdm"
-                ;;
-                *)
-                    if [[ $DESKTOP_ENVS == "plasma" ]] ; then
-                        DESKTOP_MANAGER_NAME="sddm"
-                    elif [[ $DESKTOP_ENVS == "gnome" ]] ; then
-                        DESKTOP_MANAGER_NAME="gdm"
-                    elif [[ $DESKTOP_ENVS == "deepin" ]] ; then
-                        DESKTOP_MANAGER_NAME="lightdm"
-                    elif [[ $DESKTOP_ENVS == "xfce" ]] ; then
-                        DESKTOP_MANAGER_NAME="lightdm"
-                    elif [[ $DESKTOP_ENVS == "i3wm" ]] ; then
-                        DESKTOP_MANAGER_NAME="sddm"
-                    elif [[ $DESKTOP_ENVS == "lxde" ]] ; then
-                        DESKTOP_MANAGER_NAME="lxdm"
-                    elif [[ $DESKTOP_ENVS == "cinnamon" ]] ; then
-                        DESKTOP_MANAGER_NAME="lightdm"
-                    fi
-                ;;
-            esac
-            echo ${DESKTOP_MANAGER_NAME} > "${Temp_Data}"/Desktop_Manager
-                # IN_SDDM_PKG="sddm sddm-kcm"
-                # IN_GDM_PKG="gdm"
-                # IN_LIGHTDM_PKG="lightdm"
-                # IN_LXDM_PKG="lxdm"
-                Desktop_Manager_ID=$(cat "${Temp_Data}"/Desktop_Manager)
-                if [[ ${Desktop_Manager_ID} == "sddm" ]] ; then
-                    pacman -S sddm sddm-kcm  #--安装SDDM
-                    Ct_log "pacman -S sddm sddm-kcm"
-                    # Desktop_Env_Config      # 环境配置
-                elif [[ ${Desktop_Manager_ID} == "gdm" ]] ; then
-                    pacman -S gdm    #--安装GDM
-                    Ct_log "pacman -S gdm"
-                    # Desktop_Env_Config      # 环境配置
-                elif [[ ${Desktop_Manager_ID} == "lightdm" ]] ; then
-                    pacman -S lightdm   #--安装lightdm
-                    Ct_log "pacman -S lightdm "
-                    # Desktop_Env_Config      # 环境配置
-                elif [[ ${Desktop_Manager_ID} == "lxdm" ]] ; then
-                    pacman -S lxdm  #--安装LXDM
-                    Ct_log "pacman -S lxdm"
-                    # Desktop_Env_Config      # 环境配置
-                fi
-            
-        }
-
-    # 定义 其他基本包函数
-        Programs_Name(){
-            sudo pacman -Sy  ttf-dejavu ttf-liberation thunar neofetch  unrar unzip p7zip \
-                zsh vim git ttf-wps-fonts google-chrome mtpfs mtpaint libmtp kchmviewer file-roller flameshot 
-            Ct_log "sudo pacman -Sy  ttf-dejavu ttf-liberation thunar neofetch  unrar unzip p7zip zsh vim git ttf-wps-fonts google-chrome mtpfs mtpaint libmtp kchmviewer file-roller flameshot"
-        }
-#-----------#---------------------------------------------------------------------------#
-        # 开始安装桌面环境
-        #-----------------------------
-        echo
-        echo -e "     ${w}***${h} ${b}Install Desktop${h} ${w}***${h}  "  
-        echo "---------------------------------"
-        echo -e "${PSB} ${g}   KDE plasma.     ${h}${w}[1]${h}  --sddm"
-        echo -e "${PSB} ${g}   Gnome.          ${h}${w}[2]${h}  --gdm"
-        echo -e "${PSB} ${g}   Deepin.         ${h}${w}[3]${h}  --lightdm"    
-        echo -e "${PSB} ${g}   Xfce4.          ${h}${w}[4]${h}  --lightdm"  
-        echo -e "${PSB} ${g}   i3wm.           ${h}${w}[5]${h}  --sddm"
-        echo -e "${PSB} ${g}   lxde.           ${h}${w}[6]${h}  --lxdm"
-        echo -e "${PSB} ${g}   Cinnamon.       ${h}${w}[7]${h}  --lightdm"
-        echo "---------------------------------"                           
-        echo;
-            CHOICE_ITEM_DESKTOP=$(echo -e "${PSG} ${y} Please select desktop${h} ${JHB}")
-            DESKTOP_ID="0"   # 初始化变量
-            Plasma_pkg="xorg xorg-server xorg-xinit mesa plasma plasma-desktop konsole dolphin kate plasma-pa kio-extras powerdevil kcm-fcitx"
-            Gnome_pkg="xorg xorg-server xorg-xinit mesa gnome gnome-extra gnome-tweaks gnome-shell gnome-shell-extensions gvfs-mtp gvfs gvfs-smb gnome-keyring"
-            Deepin_pkg="xorg xorg-server xorg-xinit mesa deepin deepin-extra lightdm-deepin-greeter"
-            Xfce4_pkg="xorg xorg-server xorg-xinit mesa xfce4 xfce4-goodies light-locker xfce4-power-manager libcanberra"
-            i3wm_pkg="xorg xorg-server xorg-xinit mesa i3 i3-gap
