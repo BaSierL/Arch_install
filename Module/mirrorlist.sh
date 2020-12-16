@@ -1,10 +1,10 @@
 #!/bin/bash
 # Author: Auroot/BaSierl
 # QQ： 2763833502
-# Description： Arch Linux 安装脚本 
-# URL Blog： https://basierl.github.io
-# URL GitHub： https://github.com/BaSierL/arch_install.git
-# URL Gitee ： https://gitee.com/auroot/arch_install.git
+# Description： Configure Mirrorlist -> auin V4.0.5
+# URL Blog  : www.auroot.cn 
+# URL GitHub: https://github.com/BaSierL/arch_install.git
+# URL Gitee : https://gitee.com/auroot/arch_install.git
 clear;
 #==============-------------mirrorlist----------------==============
 cat > /etc/pacman.d/mirrorlist << EOF
@@ -19,6 +19,7 @@ cat > /etc/pacman.d/mirrorlist << EOF
 ## China
 Server = https://mirrors.sjtug.sjtu.edu.cn/archlinux/\$repo/os/\$arch
 Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/\$repo/os/\$arch
+Server = http://mirrors.aliyun.com/archlinux/\$repo/os/\$arch
 Server = http://mirrors.163.com/archlinux/\$repo/os/\$arch
 
 ## China
@@ -166,9 +167,4 @@ Server = https://mirrors.cloud.tencent.com/archlinuxcn/\$arch
 #Server = file:///home/custompkgs
 EOF
 
-# 判断/tmp/Arch_install.log日志文件中是否有"archlinuxcn-keyring=yes"
-# [存在]  退出  \ [不存在] 更新archlinuxcn-keyring并记录
-
 sudo pacman -Sy --needed --noconfirm archlinuxcn-keyring 
-
-
