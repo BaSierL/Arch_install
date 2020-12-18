@@ -47,9 +47,9 @@ function Desktop_Package_Variable(){
     Xfce4_pkg="$XorgGroup_pkg xterm xfce4 xfce4-goodies light-locker xfce4-power-manager libcanberra"
     i3wm_pkg="$XorgGroup_pkg i3-wm i3lock i3blocks i3status rxvt-unicode compton dmenu feh picom nautilus polybar gvfs-mtp xfce4-terminal termite"
     i3gaps_pkg="$XorgGroup_pkg i3-gaps i3lock i3blocks i3status rxvt-unicode compton dmenu feh picom nautilus polybar gvfs-mtp xfce4-terminal termite"
-    mate_pkg="$XorgGroup_pkg mate mate-extra lightdm lightdm-gtk-greeter xorg-server"
+    mate_pkg="$XorgGroup_pkg mate mate-extra"
     lxde_pkg="$XorgGroup_pkg lxde" 
-    Cinnamon_pkg="$XorgGroup_pkg cinnamon blueberry gnome-screenshot gvfs gvfs-mtp gvfs-afc exfat-utils faenza-icon-theme accountsservice gnoem-terminal"
+    Cinnamon_pkg="$XorgGroup_pkg cinnamon blueberry gnome-screenshot gvfs gvfs-mtp gvfs-afc exfat-utils faenza-icon-theme accountsservice gnome-terminal"
     Ct_log "function Desktop_Package_Variable"
 }
 function Boot_Package_Variable(){ # Boot Pkg
@@ -159,10 +159,10 @@ EOF
     fi
     # 判断当前模式
     if [ -e /Temp_Data/Chroot ]; then
-        ChrootPattern=$(echo -e "${g}Chroot-ON${h}")
+        ChrootPattern="${g}Chroot-ON${h}"
         sed -i "8c Pattern=Chroot-ON" "$Configure_tmp_list"
     else
-        ChrootPattern=$(echo -e "${r}Chroot-OFF${h}")
+        ChrootPattern="${r}Chroot-OFF${h}"
         sed -i "8c Pattern=Chroot-OFF" "$Configure_tmp_list" 
     fi
     # 检验Archiso是否最新
@@ -215,7 +215,7 @@ function Update_Module(){
     Ct_log "function Update_Module"
 }
 # 帮助文档
-function help(){
+function Auin_help(){
     echo "${Version}"
     echo -e "auin is a script for ArchLinux installation and deployment.\n"
     echo -e "usage: auin [-h] [-V] command ...\n"
@@ -241,6 +241,8 @@ function Auin_Options(){
             exit 0;
         ;;
         -s | --openssh)
+            Info_Ethernet;
+            Configure_wifi;
             Open_SSH;
             exit 0;
         ;;
@@ -252,7 +254,7 @@ function Auin_Options(){
             exit 0;
         ;;
         -h | --help)
-            help
+            Auin_help
             exit 0;
         ;;
         -v | -V | --version)
