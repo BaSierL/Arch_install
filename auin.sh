@@ -10,7 +10,7 @@
 # set -x
 function Init_Global_Variable(){
     # The contents of the variable are customizable
-    Version="Arch Linux System installation script V4.0.5"
+    Version="Arch Linux System installation script V4.1.1"
     Stript_Dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd )
     Module="${Stript_Dir}/Module" # The script module directory
     Temp_Data="${Stript_Dir}/Temp_Data" # 日志目录 Log Directory
@@ -18,6 +18,8 @@ function Init_Global_Variable(){
     Install_Log="./Temp_Data/Arch_install.log" # The script log address
     Configure_file="$Module/install.conf"
     Configure_tmp_list="$Temp_Data/auin.list"
+    entries_a="/run/archiso/bootmnt/loader/entries/archiso-x86_64.conf"
+    entries_b="/run/archiso/bootmnt/loader/entries/archiso-x86_64-linux.conf"
     #-------模块链接
     # Default settings
     Branch="master"  # master: 稳定 preview: 测试
@@ -34,7 +36,7 @@ function System_Config_Global_Variable(){
     Ct_log "function System_Config_Variable"
 }
 function Desktop_Package_Variable(){
-    # 安装包，默认预设 请不要改变量名（萌新）可以自己添加包
+    # 安装包，默认预设 请不要改变量名(萌新),可以自己添加包
     # Font Package.
     Fonts_pkg="wqy-microhei wqy-zenhei ttf-dejavu ttf-ubuntu-font-family noto-fonts noto-fonts-extra noto-fonts-emoji noto-fonts-cjk ttf-dejavu ttf-liberation ttf-wps-fonts"
     # 常用软件 wps-office-cn wps-office-mime-cn wps-office-mui-zh-cn netease-cloud-music deepin-wine-wechat
@@ -86,14 +88,18 @@ function Color_Global_Variable(){
     # bx='\033[1;4;36m'  #---蓝 下划线
     #-----------------------------#
     # 交互 蓝  红
-    JHB=$(echo -e "${b}-=>${h} "); # JHR=$(echo -e "${r}-=>${h} ")
+    JHB=$(echo -e "${b}-=>${h} "); 
+    # JHR=$(echo -e "${r}-=>${h} ")
     # 交互 绿 黄
-    JHG=$(echo -e "${g}-=>${h} "); JHY=$(echo -e "${y}-=>${h} ")
+    # JHG=$(echo -e "${g}-=>${h} "); 
+    JHY=$(echo -e "${y}-=>${h} ")
     #-----------------------------
     # 提示 蓝 红
-    PSB=$(echo -e "${b} ::==>${h}"); PSR=$(echo -e "${r} ::==>${h}")
+    PSB=$(echo -e "${b} ::==>${h}"); 
+    PSR=$(echo -e "${r} ::==>${h}")
     # 提示 绿 黄
-    PSG=$(echo -e "${g} ::==>${h}"); PSY=$(echo -e "${y} ::==>${h}")
+    PSG=$(echo -e "${g} ::==>${h}"); 
+    PSY=$(echo -e "${y} ::==>${h}")
 }
 #-----------自检
 function facts(){
@@ -128,6 +134,7 @@ Bios_Type=
 Bisk_Type=
 CPU_Vendor=
 Virtualization=
+LinuxKernel=
 EOF
     fi
     # boot
@@ -159,23 +166,28 @@ EOF
     fi
     # 判断当前模式
     if [ -e /Temp_Data/Chroot ]; then
-        ChrootPattern="${g}Chroot-ON${h}"
+        ChrootPattern="Chroot-ON"
         sed -i "8c Pattern=Chroot-ON" "$Configure_tmp_list"
     else
-        ChrootPattern="${r}Chroot-OFF${h}"
+        ChrootPattern="Chroot-OFF"
         sed -i "8c Pattern=Chroot-OFF" "$Configure_tmp_list" 
     fi
     # 检验Archiso是否最新
+    if [ -e "$entries_a" ]; then
+        entries="$entries_a"
+    elif [ -e "$entries_b" ]; then
+        entries="$entries_b"
+    fi
     Query_Archiso_Version_check=$(Query_List _Templist_ Archiso_Version_check)
-    if [ "$Query_Archiso_Version_check" = "no" ]; then
-        Archiso_Version_check 
+    if [ "X$Query_Archiso_Version_check" = "Xno" ] || [ "X$Query_Archiso_Version_check" = "X" ]; then
+        Archiso_Version_check "$entries"
     fi
     ln -sf /usr/share/zoneinfo"$Area" /etc/localtime &>/dev/null && hwclock --systohc
 }
 # 查询列表
 function Query_List(){
-    List_options=${1}
-    List_Query=${2}
+    local List_options=${1}
+    local List_Query=${2}
     case ${List_options} in
         _Config_)
             Temp_list=$(cat "$Configure_file")
@@ -229,7 +241,7 @@ function Auin_help(){
     echo "  -V, --version  Show the conda version number and exit."
 }
 function Auin_Options(){
-    Function_Enter="${1}"
+    local Function_Enter="${1}"
     case ${Function_Enter} in
         -m | --mirror)
             bash "${Module}/mirrorlist.sh"
@@ -242,7 +254,6 @@ function Auin_Options(){
         ;;
         -s | --openssh)
             Info_Ethernet;
-            Configure_wifi;
             Open_SSH;
             exit 0;
         ;;
@@ -291,6 +302,8 @@ function Info_Ethernet(){
 }
 #  wifi配置
 function Configure_wifi() {
+    local Output_WIFI_SSID
+    local Output_WIFI_PASS
     Output_WIFI_SSID=$(echo -e "${PSG} ${g} Wifi SSID 'TP-Link...' :${h} ${JHB}")
     Output_WIFI_PASS=$(echo -e "${PSG} ${g} Wifi Password :${h} ${JHB}")
     read -p "${Output_WIFI_SSID}" WIFI_SSID
@@ -298,7 +311,8 @@ function Configure_wifi() {
     iwctl --passphrase "$WIFI_PASSWD" station "$Wifi_Name" connect "$WIFI_SSID"
     sleep 2;
     # only on ping -c 1, packer gets stuck if -c 5
-    ping -c 1 -i 2 -W 5 -w 30 8.8.8.8
+    ip address show "${Wifi_Name}"
+    ping -c 3 -i 2 -W 5 -w 30 8.8.8.8
     if [ $? -ne 0 ]; then
         echo "Network ping check failed. Cannot continue."
         Process_Management stop "$0"
@@ -308,10 +322,9 @@ function Configure_wifi() {
 # 连接有线网络
 function Configure_Ethernet(){
     echo ":: One moment please............"
-    ls /usr/bin/ifconfig &>/dev/null  echo ":: Install net-tools" ||  echo "y" |  pacman -Syu --noconfirm --needed net-tools
-    ip link set "${ETHERNET}" up
-    ifconfig "${ETHERNET}" up  
-    ping -c 1 -i 2 -W 5 -w 30 8.8.8.8
+    ip link set "${Ethernet_Name}" up
+    ip address show "${Ethernet_Name}"
+    ping -c 3 -i 2 -W 5 -w 30 8.8.8.8
     Ct_log "function Configure_Ethernet"
     sleep 1;
 }
@@ -368,11 +381,13 @@ function Install_Archlinux(){
     sleep 2;
     echo -e "\n${PSG}  ${g}Configure Fstab File.${h}"   # Configure fstab file
     genfstab -U /mnt >> /mnt/etc/fstab  
-
+    LinuxKernel=$(arch-chroot /mnt /usr/bin/uname -a | /usr/bin/cut -d"#" -f1)
+    sed -i "17c LinuxKernel=${LinuxKernel}" "$Configure_tmp_list" 
+    Ct_log "Install_Archlinux(4->2): Linux Kernel: ${LinuxKernel}"
     cp -rf "${Temp_Data}" "/mnt/" 
-    cp -rf "${Module}" "/mnt" 
-    cp -rf "${Configure_file}" "/mnt/Temp_Data" 
-    cp -rf "${Configure_tmp_list}" "/mnt/Module" 
+    cp -rf "${Module}" "/mnt/" 
+    # cp -rf "${Configure_file}" "/mnt/Temp_Data" 
+    # cp -rf "${Configure_tmp_list}" "/mnt/Module" 
 
     cat "$0" > /mnt/auin.sh  && chmod +x /mnt/auin.sh 
     
@@ -414,30 +429,30 @@ function Desktop_Env_Config(){
 } 
 # 打印选项4中的选项
 function input_System_Module(){
-    echo -e "\n     ${w}***${h} ${r}Install System Module${h} ${w}***${h}  "  
+    echo -e "\n     ${w}*** ${r}Install System Module ${w}***${h}  "  
     echo "---------------------------------------------"
-    echo -e "${PSY} ${g}   Disk partition.         ${h}${r}**${h}  ${w}[1]${h}"
-    echo -e "${PSY} ${g}   Install System Files.   ${h}${r}**${h}  ${w}[2]${h}"
-    echo -e "${PSG} ${g}   Installation Drive.     ${h}${b}*${h}   ${w}[21]${h}"    
-    echo -e "${PSG} ${g}   Installation Desktop.   ${h}${b}*${h}   ${w}[22]${h}"  
-    echo -e "${PSY} ${g}   Configurt System.       ${h}${r}**${h}  ${w}[23]${h}"
-    echo -e "${PSY} ${g}   Install virtual tools.  ${h}${b}*${h}   ${w}[24]${h}"  # 引用 https://gitee.com/Edward_Elric/archinstallscript/blob/master/Arch_install.sh +247行
-    echo -e "${PSY} ${g}   arch-chroot /mnt.       ${h}${r}**${h}  ${w}[0]${h}"
-    echo -e "---------------------------------------------\n"
+    echo -e "${PSY} ${g}   Disk partition.         ${r}**  ${w}[1]${h}"
+    echo -e "${PSY} ${g}   Install System Files.   ${r}**  ${w}[2]${h}"
+    echo -e "${PSG} ${g}   Installation Drive.     ${b}*   ${w}[21]${h}"    
+    echo -e "${PSG} ${g}   Installation Desktop.   ${b}*   ${w}[22]${h}"  
+    echo -e "${PSY} ${g}   Configurt System.       ${r}**  ${w}[23]${h}"
+    echo -e "${PSY} ${g}   Install virtual tools.  ${b}*   ${w}[24]${h}"  # 引用 https://gitee.com/Edward_Elric/archinstallscript/blob/master/Arch_install.sh +247行
+    echo -e "${PSY} ${g}   arch-chroot /mnt.       ${r}**  ${w}[0]${h}"
+    echo -e "---------------------------------------------\n" 
 }
 function input_Desktop_env(){
     echo -e "\n     ${w}***${h} ${b}Install Desktop${h} ${w}***${h}  "  
-    echo "---------------------------------"
-    echo -e "${PSB} ${g}   KDE plasma.     ${h}${w}[1]${h}  --sddm"
-    echo -e "${PSB} ${g}   Gnome.          ${h}${w}[2]${h}  --gdm"
-    echo -e "${PSB} ${g}   Deepin.         ${h}${w}[3]${h}  --lightdm"    
-    echo -e "${PSB} ${g}   Xfce4.          ${h}${w}[4]${h}  --lightdm"  
-    echo -e "${PSB} ${g}   i3wm.           ${h}${w}[5]${h}  --sddm"
-    echo -e "${PSB} ${g}   i3gaps.         ${h}${w}[6]${h}  --lightdm"
-    echo -e "${PSB} ${g}   lxde.           ${h}${w}[7]${h}  --lxdm"
-    echo -e "${PSB} ${g}   Cinnamon.       ${h}${w}[8]${h}  --lightdm"
-    echo -e "${PSB} ${g}   Mate.           ${h}${w}[9]${h}  --lightdm"
-    echo -e "---------------------------------\n"                           
+    echo "------------------------------------------------"
+    echo -e "${PSB} ${g}   KDE plasma.     ${b}[1]  ${b}default: sddm${h}"
+    echo -e "${PSB} ${g}   Gnome.          ${w}[2]  ${w}default: gdm${h}"
+    echo -e "${PSB} ${g}   Deepin.         ${b}[3]  ${b}default: ightdm${h}"    
+    echo -e "${PSB} ${g}   Xfce4.          ${w}[4]  ${w}default: lightdm${h}"  
+    echo -e "${PSB} ${g}   i3wm.           ${b}[5]  ${b}default: sddm${h}"
+    echo -e "${PSB} ${g}   i3gaps.         ${w}[6]  ${w}default: lightdm${h}"
+    echo -e "${PSB} ${g}   lxde.           ${b}[7]  ${b}default: lxdm${h}"
+    echo -e "${PSB} ${g}   Cinnamon.       ${w}[8]  ${w}default: lightdm${h}"
+    echo -e "${PSB} ${g}   Mate.           ${b}[9]  ${b}default: lightdm${h}"
+    echo -e "------------------------------------------------\n"                          
 }
 function partition_facts(){
     disk_options=${1}
@@ -498,6 +513,15 @@ function partition_type(){
             [Nn]*)
                 echo -e "\n$PSR ${r} Error: Disklabel type${b}[$user_Bisk_Type] ${r}not match and cannot be install System.$h"
                 Process_Management stop "$0"
+            ;;
+            *)
+                if [[ "$Bisk_Type" = "gpt" ]] ; then
+                    Bisk_Type="gpt"
+                elif [[ "$Bisk_Type" = "dos" ]] ; then
+                    Bisk_Type="msdos"   
+                fi
+                parted /dev/"$userinput_disk" mklabel "$Bisk_Type" -s
+            ;;
         esac 
     else 
         echo -e "\n${PSG} ${g}Currently booted with ${b}[${Bios_Type}]. ${g}Select disk type: ${b}[${Bisk_Type}].${h}"
@@ -586,9 +610,8 @@ function partition_swap(){
                 sed -i "6c Swap_file=/mnt/swapfile" "$Configure_tmp_list"
                 sed -i "7c Swap_size=${input_swap_size}" "$Configure_tmp_list"
             else
-                echo;
-                echo -e "${PSR} ${r}[SWAP] Error: Please input size: [example:512M-4G ~] !!! ${h}"  
-                Write_log_error "[SWAP] Error: Please input size: [example:512M-4G ~] !!!"
+                echo -e "\n${PSY} ${y}Skip create a swap file.${h}"  
+                sleep 2;
                 Process_Management stop "$0"
             fi
         ;;
@@ -599,11 +622,11 @@ function partition_swap(){
 # 软件包列表 及 读取变量DESKTOP_MANAGER_NAME,安装桌面/显示管理器  
 function Desktop_Manager(){
     echo "---------------------------------"
-    echo -e "${PSB} ${g}   sddm.     ${h}${w}[1]${h}"  
-    echo -e "${PSB} ${g}   gdm.      ${h}${w}[2]${h}" 
-    echo -e "${PSB} ${g}   lightdm.  ${h}${w}[3]${h}"   
-    echo -e "${PSB} ${g}   lxdm.     ${h}${w}[4]${h}"  
-    echo -e "${PSB} ${g}   default.  ${h}${w}[*]${h}" 
+    echo -e "${PSB} ${g}   sddm.     ${w}[1]${h}"  
+    echo -e "${PSB} ${g}   gdm.      ${w}[2]${h}" 
+    echo -e "${PSB} ${g}   lightdm.  ${w}[3]${h}"   
+    echo -e "${PSB} ${g}   lxdm.     ${w}[4]${h}"  
+    echo -e "${PSB} ${g}   default.  ${w}[*]${h}" 
     echo "---------------------------------"
     SELECT_DM=$(echo -e "${PSG} ${y} Please select Desktop Manager: ${h} ${JHB}")
     read -p "${SELECT_DM}" DM_ID
@@ -694,13 +717,13 @@ function desktop_environment_deepin(){
     pacman -Syu --noconfirm --needed $Deepin_pkg                  
     CommonPrograms_Install                
     Desktop_Manager               
-    sed -i 's/greeter-session=example-gtk-gnome/greeter-session=lightdm-deepin-greeter/'  /etc/lightdm/lightdm.conf
+    # sed -i 's/greeter-session=example-gtk-gnome/greeter-session=lightdm-deepin-greeter/'  /etc/lightdm/lightdm.conf
     Ct_log "function desktop_environment_deepin"
 }
 function desktop_environment_xfce4(){
     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
     sleep 1;
-    DESKTOP_ENVS=""          
+    DESKTOP_ENVS="xfce"          
     DESKTOP_XINIT="startxfce4"    
     pacman -Syu --noconfirm --needed $Xfce4_pkg
     CommonPrograms_Install                 
@@ -732,7 +755,7 @@ function desktop_environment_i3gaps(){
 function desktop_environment_lxde(){
     echo -e "${PSG} ${g}Configuring desktop environment.${h}"
     sleep 1; 
-    DESKTOP_ENVS=""          
+    DESKTOP_ENVS="lxde"          
     DESKTOP_XINIT="startlxde"     
     pacman -Syu --noconfirm --needed $lxde_pkg
     CommonPrograms_Install                 
@@ -895,9 +918,9 @@ function Configure_Grub(){
     else   #-------------------------------------------------------------------------------#
         echo -e "\n${PSG} ${w}Your startup mode has been detected as ${g}Boot Legacy${h}.\n"  
         pacman -Syu --noconfirm --needed $Bios_grub_Pkg
-        Disk_Boot=$(Query_List _Templist_ Bios_partition) 
-        grub-install --target=i386-pc --recheck "${Disk_Boot}"    # 安装Grub引导
-        Ct_log "grub-install --target=i386-pc --recheck ${Disk_Boot}"
+        Boot_Partition=$(Query_List _Templist_ Disk) 
+        grub-install --target=i386-pc --recheck "${Boot_Partition}"    # 安装Grub引导
+        Ct_log "grub-install --target=i386-pc --recheck ${Boot_Partition}"
         grub-mkconfig -o /boot/grub/grub.cfg            # 生成配置文件
         echo;
         if echo $? &>/dev/null ; then      #检验 并提示用户
@@ -981,35 +1004,45 @@ Shell_Exec(){
 }
 function Archiso_Version_check(){
     Pattern=$(Query_List _Templist_ Pattern) 
+    Archiso_Version_Enter="${1}"
     if [ "$Pattern" = "Chroot-OFF" ]; then
-        if [ -e /run/archiso/bootmnt/loader/entries/archiso-x86_64-linux.conf ]; then
-            Archiso_Version=$(grep "archisolabel=" < /run/archiso/bootmnt/loader/entries/archiso-x86_64-linux.conf | grep -v grep | awk '{print $3}' | cut -d"_" -f2)
+            Archiso_Version=$(grep "archisolabel=" < "$Archiso_Version_Enter" | grep -v grep | awk '{print $3}' | cut -d"_" -f2)
             Archiso_Time=$((($(date +%s ) - $(date +%s -d "${Archiso_Version}01"))/86400))
             sed -i "12c Archiso_Version_check=no" "$Configure_tmp_list" 
-            if [[ "$Archiso_Time" -ge 31 ]]; then
-                echo -e "Please update as soon as possible Archiso !"
-                sed -i "12c Archiso_Version_check=yes" "$Configure_tmp_list" 
-            elif [[ "$Archiso_Time" -ge 61 ]]; then
-                echo -e "You haven't updated in more than 30 days Archiso !"
-                sed -i "12c Archiso_Version_check=yes" "$Configure_tmp_list" 
+            if [[ "$Archiso_Time" -gt 121 ]]; then
+                clear;
+                echo -e "\n${PSR} ${r}You haven't updated in more than 120 days Archiso !${h}\n${PSR} ${r}Archiso Version: ${Archiso_Version}01.${h}"
+                echo -e "${PSR} ${r}Please update your archiso !!!  After 10 seconds, Exit(Ctrl+c).${h}"
+                Write_log_error "You haven't updated in more than 120 days Archiso !  Archiso Version: ${Archiso_Version}01."
+                sleep 10;
+                exit 1;
+                sed -i "12c Archiso_Version_check=no" "$Configure_tmp_list" 
             elif [[ "$Archiso_Time" -ge 91 ]]; then
-                echo -e "You haven't updated in more than 60 days Archiso !\n"
+                clear;
+                echo -e "\n${PSY} ${y}You haven't updated in more than 90 days Archiso !${h}\n${PSY} ${y}Archiso Version: ${Archiso_Version}01.${h}"
                 read -p "Whether to start the script [Y]: " Version_check
                 case $Version_check in
                     [Yy]*)
                         sleep 2;
                     ;;
                     *)
-                        Process_Management stop "$0"
+                        Write_log_error "You haven't updated in more than 90 days Archiso !  Archiso Version: ${Archiso_Version}01."
+                        exit 1;
                     ;;
                 esac
                 sed -i "12c Archiso_Version_check=no" "$Configure_tmp_list" 
-            elif [[ "$Archiso_Time" -ge 121 ]]; then
-                echo -e "You haven't updated in more than 90 days Archiso !"
-                Process_Management stop "$0"
-                sed -i "12c Archiso_Version_check=no" "$Configure_tmp_list" 
+            elif [[ "$Archiso_Time" -ge 61 ]]; then
+                clear;
+                echo -e "\n${PSY} ${y}You haven't updated in more than 60 days Archiso !${h}\n${PSY} ${y}Archiso Version: ${Archiso_Version}01.${h}"
+                sed -i "12c Archiso_Version_check=yes" "$Configure_tmp_list" 
+                sleep 2;
+            elif [[ "$Archiso_Time" -ge 31 ]]; then
+
+                clear;
+                echo -e "\n${PSY} ${y}Please update as soon as possible Archiso !${h}\n${PSY} ${y}Archiso Version: ${Archiso_Version}01.${h}"
+                sed -i "12c Archiso_Version_check=yes" "$Configure_tmp_list" 
+                sleep 2;
             fi 
-        fi
         Ct_log "function Archiso_Version_check"
     fi
 }
@@ -1057,20 +1090,22 @@ function Process_Management(){
     esac
     Ct_log "function Process_Management => ${PM_Enter_1} ${PM_Enter_2}"
 }
-
 #===========从这里开始跑===========#
 Init_Global_Variable
+Color_Global_Variable
 facts # Script self-test
 System_Config_Global_Variable
-Color_Global_Variable
 Auin_Options "${1}"
 Info_Ethernet
 Update_Module
-
+if [ "${ChrootPattern}" = "Chroot-ON" ]; then
+    ChrootPattern="${g}Chroot-ON${h}"
+else
+    ChrootPattern="${r}Chroot-OFF${h}"
+fi
 echo " " >> ${Install_Log}
 date -d "2 second" +"%Y-%m-%d %H:%M:%S" &>> "${Install_Log}"
 echo "Arch_install Script started" >> ${Install_Log}
-
 ECHOA=$(echo -e "${w}          _             _       _     _                    ${h}") 
 ECHOB=$(echo -e "${g}         / \   _ __ ___| |__   | |   (_)_ __  _   ___  __   ${h}")
 ECHOC=$(echo -e "${b}        / _ \ | '__/ __| '_ \  | |   | | '_ \| | | \ \/ /  ${h}")
@@ -1080,12 +1115,12 @@ echo -e "$ECHOA\n$ECHOB\n$ECHOC\n$ECHOD\n$ECHOE" | lolcat 2>/dev/null || echo -e
 Tips1=$(echo -e "${b}||============================================================||${h}")
 Tips2=$(echo -e "${b}|| Script Name:    ${Version}.                                  ${h}") 
 Tips3=$(echo -e "${g}|| Pattern:        ${ChrootPattern}                             ${h}")
-Tips4=$(echo -e "${g}|| Ethernet:       ${Ethernet_ip:-No_network..} - [${Ethernet_Name:- }]                ${h}")
-Tips5=$(echo -e "${g}|| WIFI:           ${Wifi_ip:-No_network.} - [${Wifi_Name:-No}]                     ${h}")
+Tips4=$(echo -e "${g}|| Ethernet:       ${Ethernet_ip:-No_network..} - [${Ethernet_Name:- }]${h}")
+Tips5=$(echo -e "${g}|| WIFI:           ${Wifi_ip:-No_network.} - [${Wifi_Name:-No}] ${h}")
 Tips6=$(echo -e "${g}|| SSH:            ssh $USER@${Ethernet_ip:-IP_Addess.}         ${h}")
 Tips7=$(echo -e "${g}|| SSH:            ssh $USER@${Wifi_ip:-IP_Addess.}             ${h}")
 Tips0=$(echo -e "${g}||============================================================||${h}")
-echo -e "$Tips1\n$Tips2\n$Tips3\n$Tips4\n$Tips5\n$Tips6\n$Tips7\n$Tips0" | lolcat 2>/dev/null || echo -e "$Tips1\n$Tips2\n$Tips3\n$Tips4\n$Tips5\n$Tips6\n$Tips7\n$Tips0"
+echo -e "$Tips1\n$Tips2\n$Tips3\n$Tips4\n$Tips5\n$Tips6\n$Tips7\n$Tips0" 
 echo -e "\n${PSB} ${g}Configure Mirrorlist   [1]${h}"
 echo -e "${PSB} ${g}Configure Network      [2]${h}"
 echo -e "${PSG} ${g}Configure SSH          [3]${h}"
@@ -1098,12 +1133,11 @@ if [[ ${principal_variable} = 1 ]]; then
 fi
 if [[ ${principal_variable} = 2 ]]; then
     echo -e "\n$w:: Checking the currently available network."  
-    sleep 2
-    echo -e "$w:: Ethernet: ${r}${Ethernet_Name}${h}"
-    echo -e "$w:: Wifi:   ${r}${Wifi_Name}${h}"
+    sleep 2;
+    echo -e "$w:: Ethernet: ${r}${Ethernet_Name}${h}\n$w:: Wifi:   ${r}${Wifi_Name}${h}"
     READS_B=$(echo -e "${PSG} ${y}Query Network: Ethernet[1] Wifi[2] Exit[3]? ${h}${JHB}")
     read -p "${READS_B}" wlink 
-        case $wlink in
+        case "$wlink" in
             1) 
                 Configure_Ethernet      
             ;;
@@ -1136,10 +1170,18 @@ if [[ ${principal_variable} = 4 ]]; then
         bash "${0}" 
     ;;
     2) # 安装及配置系统文件
-        Install_Archlinux
-        sleep 1
-        echo;
-        echo -e "${wg}#======================================================#${h}"
+    # 查 Root_partition
+        Disk_Boot=$(Query_List _Templist_ Root_partition)       
+        # 如果"$Temp_Data/auin.list" 文件中Bios_partition存在值 则安装系统
+        if [ -n "$Disk_Boot" ]; then 
+            Install_Archlinux # 安装系统函数
+        else
+            echo -e "${PSR} ${r}The partition is not mounted.${h}"
+            Write_log_error "Install_Archlinux(4->2): The partition is not mounted."
+            sleep 3;
+            Process_Management restart "$0"
+        fi
+        sleep 1;echo -e "\n${wg}#======================================================#${h}"
         echo -e "${wg}#::  System components installation completed.         #${h}"            
         echo -e "${wg}#::  Entering chroot mode.                             #${h}"
         echo -e "${wg}#::  Execute in 3 seconds.                             #${h}"
@@ -1152,45 +1194,61 @@ if [[ ${principal_variable} = 4 ]]; then
         Auin_chroot;
     ;;
     21) # Installation Drive. 驱动, 配置驱动
-        Driver_Package_Variable
-        Install_Io_Driver
-        Install_Processor_Driver
+        Driver_Package_Variable # 所有驱动Package变量
+        Install_Io_Driver   # 安装驱动函数
+        Install_Processor_Driver # CPU GPU驱动安装函数
     ;;
     22) # Installation Desktop. 桌面环境
         ConfigurePassworld    # 引用函数：设置密码
         # 开始安装桌面环境
         #-----------------------------
-        Desktop_Package_Variable
-        Install_Desktop_Env
-        #-------------------------------------------------------------------------------#     
-        install_desktop_output=$(echo -e "${PSG} ${y}Whether to install Common Drivers? [y/N]:${h} ${JHB}")
-        read -p "${install_desktop_output}" CommonDrive
-        echo;
-        case ${CommonDrive} in
-        [Yy]*)
-            Driver_Package_Variable
-            Install_Io_Driver
-        ;;
-        [Nn]* )
-        Process_Management stop "$0"
-        ;;
-        esac
+        SystemUsers=$(Query_List _Templist_ Users)
+        if [ -n "$SystemUsers" ]; then 
+            Desktop_Package_Variable  # 所有桌面Package变量
+            Install_Desktop_Env  # 安装桌面函数
+            #-------------------------------------------------------------------------------#     
+            install_desktop_output=$(echo -e "${PSG} ${y}Whether to install Common Drivers? [y/N]:${h} ${JHB}")
+            read -p "${install_desktop_output}" CommonDrive
+            case ${CommonDrive} in
+                [Yy]*)
+                    Driver_Package_Variable  # 所有驱动Package变量
+                    Install_Io_Driver  # 安装驱动函数
+                ;;
+                [Nn]* )
+                    Process_Management stop "$0"
+                ;;
+            esac
+        else
+            echo -e "${PSR} ${r}The user is not settings.${h}"
+            Write_log_error "Install_Archlinux(4->23): The user is not settings."
+            sleep 3;
+            Process_Management restart "$0"
+        fi
     ;;
     23) # 进入系统后的配置
-        Boot_Package_Variable
-        Desktop_Package_Variable
-        echo;Configure_Grub
-        Configure_System
-        #---------------------------------------------------------------------------#
-        Install_Font        # 安装字体
-        ConfigurePassworld    # 引用函数：设置密码
-        echo -e "${ws}#======================================================#${h}" #本区块退出后的提示
-        echo -e "${ws}#::                 Exit in 5/s                        #${h}" 
-        echo -e "${ws}#::  When finished, restart the computer.              #${h}"
-        echo -e "${ws}#::  If there is a problem during the installation     #${h}"
-        echo -e "${ws}#::  please contact me. QQ:2763833502                  #${h}"
-        echo -e "${ws}#======================================================#${h}"
-        sleep 3
+        LinuxKernel=$(Query_List _Templist_ LinuxKernel)    
+        if [ -n "$LinuxKernel" ]; then 
+            Boot_Package_Variable
+            Desktop_Package_Variable
+            echo;Configure_Grub
+            Configure_System
+            #---------------------------------------------------------------------------#
+            Install_Font        # 安装字体
+            ConfigurePassworld    # 引用函数：设置密码
+            echo -e "${ws}#======================================================#${h}" #本区块退出后的提示
+            echo -e "${ws}#::                 Exit in 5/s                        #${h}" 
+            echo -e "${ws}#::  When finished, restart the computer.              #${h}"
+            echo -e "${ws}#::  If there is a problem during the installation     #${h}"
+            echo -e "${ws}#::  please contact me. QQ:2763833502                  #${h}"
+            echo -e "${ws}#======================================================#${h}"
+            sleep 3
+        else
+            echo -e "${PSR} ${r}The system is not installed. Exec: 4->2 ${h}"
+            Write_log_error "Install_Archlinux(4->23): The system is not installed. "
+            sleep 3;
+            Process_Management restart "$0"
+        fi
+        
     ;;
     24) # Installation VM. open-vm-tools
         echo;install_virtualization_service
